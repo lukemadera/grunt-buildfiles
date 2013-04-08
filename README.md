@@ -25,20 +25,8 @@ grunt.loadNpmTasks('grunt-buildfiles');
 
 ### Usage Examples
 
+Example of JUST the buildfiles task config - NOTE this plugin depends on and works with other plugins and configs so this is INCOMPLETE - see the "test" directory for a full example of all necessary files and configurations.
 ```js
-// Project configuration.
-var buildfilesListObj = require('./config/buildfilesList');
-var publicPathRelativeRoot ="public/";		//hardcoded
-var publicPathRelative =publicPathRelativeRoot+"app/";		//hardcoded
-var publicPathRelativeDot ="./"+publicPathRelative;
-var config ={
-	customMinifyFile: publicPathRelative+'temp/custom.min.js'
-};
-grunt.initConfig({
-	cfgJson: grunt.file.readJSON('config.json'),
-	customMinifyFile: config.customMinifyFile,		//MUST be defined		//@todo - fix this
-	filePathsJs: '',		//will be filled/created in buildfiles task
-	filePathsCss: '',		//will be filled/created in buildfiles task
   buildfiles: {
 		staticPath: cfgJson.staticPath,
 		publicPath: publicPathRelativeDot,
@@ -75,7 +63,6 @@ grunt.initConfig({
 			}
 		}
 	}
-});
 ```
 
 ## TODO
