@@ -36,7 +36,6 @@ module.exports = function(grunt) {
 		};		//will hold ONLY the external (3rd party / already minified) files and then the custom min file (built via grunt) will be added to it
 		var lintFiles =[];
 		
-		var msgLintFiles ='';
 		//build full file resource links
 		for(var type in files) {	//go through all resource types (css, js)
 			filePaths[type] =[];
@@ -64,7 +63,6 @@ module.exports = function(grunt) {
 					
 					if(customDir) {
 						lintFiles[lintFiles.length] =curFileConcat;
-						msgLintFiles+=' '+curFileConcat+' ';
 					}
 					else {
 						if(type =='js') {
@@ -95,7 +93,6 @@ module.exports = function(grunt) {
 			}
 			
 			if(conf.configPaths.jshint !==undefined && conf.configPaths.jshint.beforeconcat !==undefined) {
-				grunt.log.writeln('lintFiles: '+msgLintFiles);
 				//grunt.config(conf.configPaths.jshint.beforeconcat, lintFiles);
 				//lintFiles =['test/*.js'];
 				grunt.config(conf.configPaths.jshint.beforeconcat, lintFiles);
@@ -113,7 +110,6 @@ module.exports = function(grunt) {
 				//filesTemp[fileTmp] =lintFiles;
 				//filesTemp['yes'] =lintFiles;
 				filesTmp['<%= customMinifyFile %>'] =lintFiles;
-				grunt.log.writeln('lintFiles count: '+lintFiles.length);
 				// var str1 ='<%= '+fileTmp+' %>';
 				// filesTmp[str1] =lintFiles;
 				//grunt.config(conf.configPaths.uglify.files, {'<%= customMinifyFile %>': lintFiles});
