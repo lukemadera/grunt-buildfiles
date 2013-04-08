@@ -54,12 +54,12 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 			indexHtml: {
 				src: publicPathRelative+"index-grunt.html",
 				dest: publicPathRelative+"index.html",
-				destProd: publicPathRelative+"index-dev.html",
+				destProd: publicPathRelative+"index-dev.html"
 			},
 			indexHtmlProd: {
 				src: publicPathRelative+"index-prod-grunt.html",
 				dest: publicPathRelative+"index-prod.html",
-				destProd: publicPathRelative+"index.html",
+				destProd: publicPathRelative+"index.html"
 			}
 		}
 	}

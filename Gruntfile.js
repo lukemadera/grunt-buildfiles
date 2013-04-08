@@ -13,7 +13,6 @@ Lint, concat, & minify (uglify) process (since ONLY want to lint & minify files 
 module.exports = function(grunt) {
 
 	var cfgJson = require('./config.json');
-	//global.cfgJson =cfgJson;
 	var buildfilesListObj = require('./test/config/buildfilesList');
 	var publicPathRelativeRoot ="test/";		//hardcoded
 	var publicPathRelative =publicPathRelativeRoot+"";		//hardcoded
@@ -23,18 +22,16 @@ module.exports = function(grunt) {
 		'concatJs':"assets/main.js",
 		'concatCss':"assets/main.css",
 		'minJs':"assets/main-min.js",
-		'minCss':"assets/main-min.css",
+		'minCss':"assets/main-min.css"
 	};
 	
 	var config ={
 		customMinifyFile: publicPathRelative+'temp/custom.min.js',
-		customFile: publicPathRelative+'temp/custom.js',
+		customFile: publicPathRelative+'temp/custom.js'
 	};
 	
   // Project configuration.
   grunt.initConfig({
-		//builddir: 'test',
-		builddir: 'build',
 		customMinifyFile: config.customMinifyFile,
 		customFile: config.customFile,
 		pkg: grunt.file.readJSON('package.json'),
@@ -83,34 +80,33 @@ module.exports = function(grunt) {
 				indexHtml: {
 					src: publicPathRelative+"index-grunt.html",
 					dest: publicPathRelative+"index.html",
-					destProd: publicPathRelative+"index-dev.html",
+					destProd: publicPathRelative+"index-dev.html"
 				},
 				indexHtmlProd: {
 					src: publicPathRelative+"index-prod-grunt.html",
 					dest: publicPathRelative+"index-prod.html",
-					destProd: publicPathRelative+"index.html",
+					destProd: publicPathRelative+"index.html"
 				}
 			}
 		},
 		concat: {
 			devCss: {
 				src: [],		//will be filled via buildfiles task
-				dest: publicPathRelativeDot+paths.concatCss,
+				dest: publicPathRelativeDot+paths.concatCss
 			},
 			//min version
 			devJs: {
 				src: [],		//will be filled via buildfiles task
-				dest: publicPathRelativeDot+paths.minJs,
+				dest: publicPathRelativeDot+paths.minJs
 			}
 		},
 		jshint: {
 			options:{
-				force: true,
+				force: true
 				//globalstrict: true
 				//sub:true,
 			},
-			beforeconcat: [],		//filled via buildfiles task
-			afterconcat: ['<%= builddir %>/<%= pkg.name %>.js']
+			beforeconcat: []		//filled via buildfiles task
 		},
     uglify: {
       options: {
