@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<%
+	var cfgJson = grunt.config('cfgJson');
+	%>
+	<title><% print(cfgJson.title); %></title>
+
+	<%
+	var filePaths = grunt.config('filePathsCss');
+	for(var ii=0; ii<filePaths.length; ii++) {
+		print('\t<link rel="stylesheet" href="' + filePaths[ii] + '"/>\n');
+	}
+	%>
+
+</head>
+<body>
+	cool app!
+<%
+var filePaths = grunt.config('filePathsJs');
+for(var ii=0; ii<filePaths.length; ii++) {
+	print('\t<script type="text/javascript" src="' + filePaths[ii] + '"></script>\n');
+}
+%>
+
+</body>
+</html>
