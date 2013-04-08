@@ -1,38 +1,10 @@
-lib-cov
-*.seed
-*.log
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
-
-pids
-logs
-results
-
-npm-debug.log
-
-
-
 node_modules
-/config.json
-#YUI auto documentation
-out
 
 *.DS_Store
-*.sass-cache
-.sass-cache
 
 #ignore files compiled / built by grunt
-public/app/css
-public/app/1assets
-public/app/temp
-_dir-paths.less
-index.html
-index-prod.html
-index-dev.html
-index-phonegap.html
-public/app/modules/services/LGlobals.js
-public/app/partials/resources/no-touch.html
-public/app/partials/resources/touch.html
+test/assets
+test/temp
+test/index.html
+test/index-prod.html
+test/index-dev.html

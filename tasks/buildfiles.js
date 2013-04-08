@@ -36,6 +36,7 @@ module.exports = function(grunt) {
 		};		//will hold ONLY the external (3rd party / already minified) files and then the custom min file (built via grunt) will be added to it
 		var lintFiles =[];
 		
+		var msgLintFiles ='';
 		//build full file resource links
 		for(var type in files) {	//go through all resource types (css, js)
 			filePaths[type] =[];
@@ -63,6 +64,7 @@ module.exports = function(grunt) {
 					
 					if(customDir) {
 						lintFiles[lintFiles.length] =curFileConcat;
+						msgLintFiles+=' '+curFileConcat+' ';
 					}
 					else {
 						if(type =='js') {
@@ -72,6 +74,7 @@ module.exports = function(grunt) {
 				}
 			}
 		}
+
 		
 		//update/set grunt.config paths for other tasks to use later
 		if(conf.configPaths !==undefined) {
@@ -90,9 +93,14 @@ module.exports = function(grunt) {
 				grunt.config(conf.configPaths.indexFilePaths.js, filePaths.js);
 				grunt.config(conf.configPaths.indexFilePaths.css, filePaths.css);
 			}
+			
 			if(conf.configPaths.jshint !==undefined && conf.configPaths.jshint.beforeconcat !==undefined) {
+				grunt.log.writeln('lintFiles: '+msgLintFiles);
+				//grunt.config(conf.configPaths.jshint.beforeconcat, lintFiles);
+				//lintFiles =['test/*.js'];
 				grunt.config(conf.configPaths.jshint.beforeconcat, lintFiles);
 			}
+			
 			if(conf.configPaths.uglify !==undefined && conf.configPaths.uglify.files !==undefined) {
 				//@todo - figure out how to make this a dynamic config value rather than hardcoded..
 				var fileTmp =conf.customMinifyFile;
@@ -105,6 +113,7 @@ module.exports = function(grunt) {
 				//filesTemp[fileTmp] =lintFiles;
 				//filesTemp['yes'] =lintFiles;
 				filesTmp['<%= customMinifyFile %>'] =lintFiles;
+				grunt.log.writeln('lintFiles count: '+lintFiles.length);
 				// var str1 ='<%= '+fileTmp+' %>';
 				// filesTmp[str1] =lintFiles;
 				//grunt.config(conf.configPaths.uglify.files, {'<%= customMinifyFile %>': lintFiles});

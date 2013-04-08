@@ -6,12 +6,12 @@
 	%>
 	<title><% print(cfgJson.title); %></title>
 
-	<%
-	var filePaths = grunt.config('filePathsCss');
-	for(var ii=0; ii<filePaths.length; ii++) {
-		print('\t<link rel="stylesheet" href="' + filePaths[ii] + '"/>\n');
-	}
-	%>
+<%
+var filePaths = grunt.config('filePathsCss');
+for(var ii=0; ii<filePaths.length; ii++) {
+	print('\t<link rel="stylesheet" href="' + filePaths[ii] + '"/>\n');
+}
+%>
 
 </head>
 <body>

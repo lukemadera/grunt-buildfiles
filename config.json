@@ -1,0 +1,9 @@
+{
+  "name": "grunt-buildfiles-test",
+	"title":"Grunt Buildfiles Test",
+	"env": "development",
+	"domain": "localhost",
+	"serverPath": "/",
+	"publicPath": "/public/app/",
+	"staticPath": "/"
+}

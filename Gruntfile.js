@@ -14,31 +14,36 @@ module.exports = function(grunt) {
 
 	var cfgJson = require('./config.json');
 	//global.cfgJson =cfgJson;
-	var buildfilesListObj = require('./test/buildfilesList');
+	var buildfilesListObj = require('./test/config/buildfilesList');
 	var publicPathRelativeRoot ="test/";		//hardcoded
 	var publicPathRelative =publicPathRelativeRoot+"";		//hardcoded
 	var publicPathRelativeDot ="./"+publicPathRelative;
 	
 	var paths = {		//publicPathRelative will be prepended
-		'concatJs':"test/assets/main.js",
-		'concatCss':"test/assets/main.css",
-		'minJs':"test/assets/main-min.js",
-		'minCss':"test/assets/main-min.css",
+		'concatJs':"assets/main.js",
+		'concatCss':"assets/main.css",
+		'minJs':"assets/main-min.js",
+		'minCss':"assets/main-min.css",
 	};
 	
 	var config ={
-		customMinifyFile: publicPathRelative+'test/custom.min.js',
+		customMinifyFile: publicPathRelative+'temp/custom.min.js',
+		customFile: publicPathRelative+'temp/custom.js',
 	};
 	
   // Project configuration.
   grunt.initConfig({
-		builddir: 'test',
+		//builddir: 'test',
+		builddir: 'build',
+		customMinifyFile: config.customMinifyFile,
+		customFile: config.customFile,
 		pkg: grunt.file.readJSON('package.json'),
+		
+		lintFilesJs: [],		//will be filled/created in buildfiles task
+		
 		cfgJson: grunt.file.readJSON('config.json'),
 		
-		customMinifyFile: config.customMinifyFile,
 		//will be filled/created in buildfiles task
-		lintFilesJs: [],
 		filePathsJs: '',
 		filePathsCss: '',
 		filePathConcatJs: cfgJson.serverPath+paths.concatJs,
@@ -122,7 +127,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
+	
 	//grunt.loadNpmTasks('grunt-buildfiles');
+	grunt.loadTasks('tasks');
 
   // Default task(s).
 	grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'concat:devJs', 'concat:devCss']);

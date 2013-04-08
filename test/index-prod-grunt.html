@@ -6,11 +6,11 @@
 	%>
   <title><% print(cfgJson.title); %></title>
 	
-	<%
-	var filePath =grunt.config('filePathMinCss');
-	var filePath =grunt.config('filePathConcatCss');
-	print('\t<link rel="stylesheet" href="' + filePath + '"/>\n');
-	%>
+<%
+var filePath =grunt.config('filePathMinCss');
+var filePath =grunt.config('filePathConcatCss');
+print('\t<link rel="stylesheet" href="' + filePath + '"/>\n');
+%>
 
 </head>
 <body>
