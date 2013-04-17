@@ -43,6 +43,8 @@ module.exports = function(grunt) {
 		//will be filled/created in buildfiles task
 		filePathsJs: '',
 		filePathsCss: '',
+		filePathsJsNoPrefix:        '',		//will be filled/created in buildfiles task
+		filePathsCssNoPrefix:        '',		//will be filled/created in buildfiles task
 		filePathConcatJs: cfgJson.serverPath+paths.concatJs,
 		filePathConcatCss: cfgJson.serverPath+paths.concatCss,
 		filePathMinJs: cfgJson.serverPath+paths.minJs,
@@ -59,21 +61,25 @@ module.exports = function(grunt) {
 			customMinifyFile: config.customMinifyFile,
 			buildfilesArray: buildfilesListObj.files,
 			configPaths: {
+				noPrefix: {
+					js: ['filePathsJsNoPrefix'],
+					css: ['filePathsCssNoPrefix']
+				},
 				indexFilePaths:{
-					js:'filePathsJs',
-					css:'filePathsCss'
+					js: ['filePathsJs'],
+					css: ['filePathsCss']
 				},
 				concat:{
 					src:{
-						js:'concat.devJs.src',
-						css:'concat.devCss.src'
+						js: ['concat.devJs.src'],
+						css: ['concat.devCss.src']
 					}
 				},
 				jshint:{
-					beforeconcat:'jshint.beforeconcat'
+					files: ['jshint.beforeconcat']
 				},
 				uglify:{
-					files:'uglify.build.files'
+					files: ['uglify.build.files']
 				}
 			},
 			files: {

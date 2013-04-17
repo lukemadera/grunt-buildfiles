@@ -33,21 +33,25 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 		customMinifyFile: config.customMinifyFile,
 		buildfilesArray: buildfilesListObj.files,
 		configPaths: {
+			noPrefix: {
+				js: ['filePathsJsNoPrefix'],
+				css: ['filePathsCssNoPrefix']
+			},
 			indexFilePaths:{
-				js:'filePathsJs',
-				css:'filePathsCss'
+				js: ['filePathsJs'],
+				css: ['filePathsCss']
 			},
 			concat:{
 				src:{
-					js:'concat.devJs.src',
-					css:'concat.devCss.src'
+					js: ['concat.devJs.src'],
+					css: ['concat.devCss.src']
 				}
 			},
 			jshint:{
-				beforeconcat:'jshint.beforeconcat'
+				files: ['jshint.beforeconcat']
 			},
 			uglify:{
-				files:'uglify.build.files'
+				files: ['uglify.build.files']
 			}
 		},
 		files: {
@@ -64,6 +68,13 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 		}
 	}
 ```
+
+## Development (see https://npmjs.org/doc/developers.html for notes on publishing npm modules in general)
+- run grunt to ensure no issues
+- bump version number in package.json
+- update CHANGELOG file
+- npm publish
+
 
 ## TODO
 - figure out how to make uglify files key be dynamic rather than hardcoded.. (currently "customMinifyFile" must be properly defined in grunt.initConfig(..) for this plugin to work..)

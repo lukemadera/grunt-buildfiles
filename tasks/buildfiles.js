@@ -31,6 +31,7 @@ module.exports = function(grunt) {
 
 		var filePaths ={};		//will hold all final files by type
 		var filePathsConcat ={};		//will hold all final files by type for concat (different prefix)
+		var filePathsNoPrefix ={};		//will hold all files by type but without ANY prefix in front (so can be added in elsewhere for more flexibility)
 		var filePathsMin ={
 			'js':[]
 		};		//will hold ONLY the external (3rd party / already minified) files and then the custom min file (built via grunt) will be added to it
@@ -40,6 +41,7 @@ module.exports = function(grunt) {
 		for(var type in files) {	//go through all resource types (css, js)
 			filePaths[type] =[];
 			filePathsConcat[type] =[];
+			filePathsNoPrefix[type] =[];
 			for(var dir in files[type].files) {		//go through all directories
 				//if this dir is a custom one (i.e. not an external/3rd party library directory), add it to the lint and concat list
 				var customDir =false;
@@ -60,6 +62,7 @@ module.exports = function(grunt) {
 					filePaths[type][filePaths[type].length] =curFile;
 					var curFileConcat =publicPath+curPathPart;
 					filePathsConcat[type][filePathsConcat[type].length] =curFileConcat;
+					filePathsNoPrefix[type][filePathsNoPrefix[type].length] =curPathPart;
 					
 					if(customDir) {
 						lintFiles[lintFiles.length] =curFileConcat;
@@ -79,23 +82,43 @@ module.exports = function(grunt) {
 			if(conf.configPaths.concat !==undefined) {
 				//ext (already final/minified) files + custom min file
 				filePathsMin.js.push(conf.customMinifyFile);
-				grunt.config(conf.configPaths.concat.src.js, filePathsMin.js);
+				for(var ii=0; ii<conf.configPaths.concat.src.js.length; ii++) {
+					grunt.config(conf.configPaths.concat.src.js[ii], filePathsMin.js);
+				}
 				
-				grunt.config(conf.configPaths.concat.src.css, filePathsConcat.css);
+				for(var ii=0; ii<conf.configPaths.concat.src.css.length; ii++) {
+					grunt.config(conf.configPaths.concat.src.css[ii], filePathsConcat.css);
+				}
 				// grunt.log.writeln('concatFiles: js len ' + filePathsConcat.js.length+" "+grunt.config('concat.devJs.src').length+" "+filePathsConcat.js[0]+" "+grunt.config('concat.devJs.dest'));
 				// grunt.log.writeln('concatFiles: css len ' + filePathsConcat.css.length+" "+grunt.config('concat.devCss.src').length+" "+filePathsConcat.css[0]+" "+grunt.config('concat.devCss.dest'));
 			}
 
-			//set config values so they can be used in later tasks
+			//do indexFilePaths (used for writing index.html to include <script> and <style> tags)
 			if(conf.configPaths.indexFilePaths !==undefined && conf.configPaths.indexFilePaths.js !==undefined && conf.configPaths.indexFilePaths.css !==undefined) {
-				grunt.config(conf.configPaths.indexFilePaths.js, filePaths.js);
-				grunt.config(conf.configPaths.indexFilePaths.css, filePaths.css);
+				for(var ii=0; ii<conf.configPaths.indexFilePaths.js.length; ii++) {
+					grunt.config(conf.configPaths.indexFilePaths.js[ii], filePaths.js);
+				}
+				for(var ii=0; ii<conf.configPaths.indexFilePaths.css.length; ii++) {
+					grunt.config(conf.configPaths.indexFilePaths.css[ii], filePaths.css);
+				}
 			}
 			
-			if(conf.configPaths.jshint !==undefined && conf.configPaths.jshint.beforeconcat !==undefined) {
-				//grunt.config(conf.configPaths.jshint.beforeconcat, lintFiles);
+			//do noPrefix file paths (used for everything else - a prefix can be added (or not) for flexible use for other things such as including for Testacular config)
+			if(conf.configPaths.noPrefix !==undefined && conf.configPaths.noPrefix.js !==undefined && conf.configPaths.noPrefix.css !==undefined) {
+				for(var ii=0; ii<conf.configPaths.noPrefix.js.length; ii++) {
+					grunt.config(conf.configPaths.noPrefix.js[ii], filePathsNoPrefix.js);
+				}
+				for(var ii=0; ii<conf.configPaths.noPrefix.css.length; ii++) {
+					grunt.config(conf.configPaths.noPrefix.css[ii], filePathsNoPrefix.css);
+				}
+			}
+			
+			if(conf.configPaths.jshint !==undefined && conf.configPaths.jshint.files !==undefined) {
+				//grunt.config(conf.configPaths.jshint.files, lintFiles);
 				//lintFiles =['test/*.js'];
-				grunt.config(conf.configPaths.jshint.beforeconcat, lintFiles);
+				for(var ii=0; ii<conf.configPaths.jshint.files.length; ii++) {
+					grunt.config(conf.configPaths.jshint.files[ii], lintFiles);
+				}
 			}
 			
 			if(conf.configPaths.uglify !==undefined && conf.configPaths.uglify.files !==undefined) {
@@ -116,7 +139,9 @@ module.exports = function(grunt) {
 				//grunt.config(conf.configPaths.uglify.files, {fileTmp: lintFiles});
 				//grunt.config(conf.configPaths.uglify.files.fileTmp, lintFiles);
 				//grunt.config(conf.configPaths.uglify.files, {'<%= "'+fileTmp+'" %>': lintFiles});
-				grunt.config(conf.configPaths.uglify.files, filesTmp);
+				for(var ii=0; ii<conf.configPaths.uglify.files.length; ii++) {
+					grunt.config(conf.configPaths.uglify.files[ii], filesTmp);
+				}
 				//grunt.log.writeln('uglifyFiles: '+grunt.config('uglify.build.files'));
 			}
 		}
