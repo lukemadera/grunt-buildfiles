@@ -1,14 +1,37 @@
 /**
-Takes a buildfilesArray javascript array as a config list of all javascript and css files and uses them to set the lint, concat, uglify files as well as writes grunt template files (including index.html) to include these resources appropriately.  
-Can handle separating external (already minified) files from the rest to avoid any issues with double minification. To use this, set the "dirsExt" key in the buildfilesArray to an array of the directories to NOT uglify/minify
+Many grunt tasks use the wildcard * or ** symbols for deciding which files to include for that task. This is simple and easy BUT doesn't allow much flexibility since if you have a particular directory or file to exclude, it becomes fairly complicated to exclude that file. Furthermore, you have to define (hardcode) this file list in your actual grunt file and you may have to define it many times (or define different variations multiple times). This plugin allows you to define your files (css, js, html) ONCE in a separate config file and gives more flexibility around which files to use where - without relying on blanket file globbing or pattern matching rules. Basically, instead of including all files by default, this plugin does the opposite - it only includes the files you explicity tell it to. This is less error prone since files won't accidentally be included that shouldn't be since each file is specified.
+
+Secondly, this plugin writes grunt templates for you (allowing you to specify a config file in one place then use it to add these config values in all file types (your css, js and html) so you have ONE source of truth. This is especially useful for file paths, which are often shared across your css (i.e. for LESS or SASS pre-processing) and javascript (for http requests or including resources). Can also be used server side so you only need ONE config.json file for your WHOLE app (rather than one config file per language - one for css, one for javascript, one for the server, etc.)
+
+
+Common use cases:
+- forming and stuffing a list of file to lint/jshint and/or minify/uglify (without double linting/uglifying external library files that have already been linted/minified and should NOT be done again). For use with a grunt jshint and/or uglify task.
+- forming and stuffing a list of files to concat (for use with a grunt concat task)
+- dynamically generating your index.html file with all your <link rel="stylesheet" > css tags, <script> js tags and <script> template cache html files/partials (i.e. for use with AngularJS to preload all your templates for better performance)
+- generate other config files (across css, js, html) using grunt template files to stick in config variables defined in a config.json file (this way you don't need to separately set, hardcode and match config variables across css, js, etc.)
+
+
+More specifically, this plugin takes a buildfilesArray javascript array as a config list of all javascript and css (and html) files and uses them to set the lint, concat, uglify files as well as writes grunt template files (including index.html) to include these resources appropriately.  
+Can handle separating external (already minified) files from the rest to avoid any issues with double minification. To use this, set the "dirsExt" key in the buildfilesArray to an array of the directories to NOT uglify/minify.
+
+
+@toc
+1. pull in grunt options and config
+2. init and form file paths
+3. set grunt.config paths (for use later in other grunt tasks)
+4. write the actual file(s) using the grunt template(s)
 
 @todo - figure out how to make uglify files key be dynamic rather than hardcoded..
 */
 module.exports = function(grunt) {
 	grunt.registerTask("buildfiles", "Generate resource file names and build final files using grunt templates depending on server environment config", function() {
+	
+		/**
+		Pull in grunt options and config.
+		See if in production ('prod') mode or not based off command line parameters (i.e. `grunt --type=prod` )
+		@toc 1.
+		*/
 		var conf =grunt.config('buildfiles');
-		var publicPath =conf.publicPath;
-		var staticPath =conf.staticPath;
 		
 		//see if in production mode (via grunt command line option) or not
 		var gruntOptType =false;
@@ -17,33 +40,40 @@ module.exports = function(grunt) {
 		}
 		grunt.log.writeln('type: '+gruntOptType);
 		
-		/*
-		Example: filePaths:{
-			'js':[
-				...
-			],
-			'css':[
-				...
-			],
-		}
-		*/
 		var files =conf.buildfilesArray;
 
-		var filePaths ={};		//will hold all final files by type
-		var filePathsConcat ={};		//will hold all final files by type for concat (different prefix)
-		var filePathsNoPrefix ={};		//will hold all files by type but without ANY prefix in front (so can be added in elsewhere for more flexibility)
-		var filePathsMin ={
-			'js':[]
-		};		//will hold ONLY the external (3rd party / already minified) files and then the custom min file (built via grunt) will be added to it
-		var lintFiles =[];
 		
-		//build full file resource links
+
+		/**
+		Init filePaths and then build them (join directory and filenames toegether for each file)
+		@toc 2.
+		*/
+		/**
+		@property filePaths Will hold all the final files (joining the directory with the file name) by type. Each type (html, css, js) is an array of file paths.
+			'all' key is for BOTH custom and external/3rd party files
+			'custom' key is for custom files. These are just files that SHOULD be linted (and minified) (i.e. all files that are NOT in one of the 'dirsExt' directories). This is the OPPOSITE of the 'ext' key - whichever files are NOT in 'ext' will be in here.
+			'ext' key is for external / 3rd party files. These are just files that should NOT be linted and minfied (i.e. all files that ARE in one of the 'dirsExt' directories). This is the OPPOSITE of the 'custom' key - whichever files are NOT in 'custom' will be in here.
+		@type Object
+		*/
+		var filePaths ={
+			all: {
+				css: [],
+				js: [],
+				html: []
+			},
+			custom: {
+				js: []
+			},
+			ext: {
+				js: []
+			}
+		};
+		
+		//build full file resource links (join directory with file to form full path)
 		for(var type in files) {	//go through all resource types (css, js)
-			filePaths[type] =[];
-			filePathsConcat[type] =[];
-			filePathsNoPrefix[type] =[];
 			for(var dir in files[type].files) {		//go through all directories
-				//if this dir is a custom one (i.e. not an external/3rd party library directory), add it to the lint and concat list
+			
+				//see if this dir is a custom one (i.e. not an external/3rd party library directory)
 				var customDir =false;
 				if(files[type].dirsExt !==undefined) {
 					customDir =true;
@@ -55,21 +85,24 @@ module.exports = function(grunt) {
 					}
 				}
 				
+				//go through each file and join it to the directory to form the full path
 				var dirPath =files[type].dirs[dir];
-				for(var ii =0; ii<files[type].files[dir].length; ii++) {
-					var curPathPart =dirPath+'/'+files[type].files[dir][ii];
-					var curFile =staticPath+curPathPart;
-					filePaths[type][filePaths[type].length] =curFile;
-					var curFileConcat =publicPath+curPathPart;
-					filePathsConcat[type][filePathsConcat[type].length] =curFileConcat;
-					filePathsNoPrefix[type][filePathsNoPrefix[type].length] =curPathPart;
+				for(var ii =0; ii<files[type].files[dir].length; ii++) {		//go through each file in this directory
+					var curPathPart =dirPath+'/'+files[type].files[dir][ii];		//form the full path
 					
+					//add to the main ('all') file group
+					filePaths.all[type].push(curPathPart);
+					
+					//if a custom directory, add to the custom file group as well
 					if(customDir) {
-						lintFiles[lintFiles.length] =curFileConcat;
+						if(type =='js') {
+							filePaths.custom[type].push(curPathPart);
+						}
 					}
+					//if NOT a custom directory (i.e. if an external / 3rd party directory), add to the ext file group as well
 					else {
 						if(type =='js') {
-							filePathsMin.js.push(curFileConcat);
+							filePaths.ext[type].push(curPathPart);
 						}
 					}
 				}
@@ -77,91 +110,71 @@ module.exports = function(grunt) {
 		}
 
 		
-		//update/set grunt.config paths for other tasks to use later
-		if(conf.configPaths !==undefined) {
-			if(conf.configPaths.concat !==undefined) {
-				//ext (already final/minified) files + custom min file
-				filePathsMin.js.push(conf.customMinifyFile);
-				for(var ii=0; ii<conf.configPaths.concat.src.js.length; ii++) {
-					grunt.config(conf.configPaths.concat.src.js[ii], filePathsMin.js);
-				}
-				
-				for(var ii=0; ii<conf.configPaths.concat.src.css.length; ii++) {
-					grunt.config(conf.configPaths.concat.src.css[ii], filePathsConcat.css);
-				}
-				// grunt.log.writeln('concatFiles: js len ' + filePathsConcat.js.length+" "+grunt.config('concat.devJs.src').length+" "+filePathsConcat.js[0]+" "+grunt.config('concat.devJs.dest'));
-				// grunt.log.writeln('concatFiles: css len ' + filePathsConcat.css.length+" "+grunt.config('concat.devCss.src').length+" "+filePathsConcat.css[0]+" "+grunt.config('concat.devCss.dest'));
-			}
 
-			//do indexFilePaths (used for writing index.html to include <script> and <style> tags)
-			if(conf.configPaths.indexFilePaths !==undefined && conf.configPaths.indexFilePaths.js !==undefined && conf.configPaths.indexFilePaths.css !==undefined) {
-				for(var ii=0; ii<conf.configPaths.indexFilePaths.js.length; ii++) {
-					grunt.config(conf.configPaths.indexFilePaths.js[ii], filePaths.js);
+		/**
+		update/set grunt.config paths (for use later in other grunt tasks)
+		@toc 3.
+		*/
+		if(conf.configPaths !==undefined) {
+			var config, prefix, fileType, ii, fileGroup, prefixedFilePaths;
+			for(config in conf.configPaths) {		//iterate through each config path
+				prefix =conf.configPaths[config].prefix || '';		//default to no prefix
+				fileGroup =conf.configPaths[config].fileGroup || 'all';		//default to all (both custom and ext files)
+				// console.log('config: '+config+' prefix: '+prefix+' fileGroup: '+fileGroup);
+				
+				for(fileType in conf.configPaths[config].files) {		//iterate through each file type
+					//form new file paths array with prefix prepended
+					prefixedFilePaths =[];
+					for(ii =0; ii<filePaths[fileGroup][fileType].length; ii++) {
+						prefixedFilePaths[ii] =prefix+filePaths[fileGroup][fileType][ii];
+					}
+					
+					//if want to add additional files to this grunt.config, add them now
+					if(conf.configPaths[config].additionalFiles !==undefined && conf.configPaths[config].additionalFiles.length >0) {
+						for(ii =0; ii<conf.configPaths[config].additionalFiles.length; ii++) {
+							prefixedFilePaths.push(conf.configPaths[config].additionalFiles[ii]);
+						}
+					}
+					
+					//special case for uglify task		//@todo - fix this..
+					if(conf.configPaths[config].uglify !==undefined && conf.configPaths[config].uglify) {
+						prefixedFilePaths ={
+							'<%= customMinifyFile %>': prefixedFilePaths
+						};
+					}
+					
+					//actually set the grunt.config now that we have the final file paths (with the prefixes prepended)
+					for(ii=0; ii<conf.configPaths[config].files[fileType].length; ii++) {
+						// console.log(conf.configPaths[config].files[fileType][ii]+' '+prefixedFilePaths);
+						grunt.config(conf.configPaths[config].files[fileType][ii], prefixedFilePaths);
+					}
 				}
-				for(var ii=0; ii<conf.configPaths.indexFilePaths.css.length; ii++) {
-					grunt.config(conf.configPaths.indexFilePaths.css[ii], filePaths.css);
-				}
-			}
-			
-			//do noPrefix file paths (used for everything else - a prefix can be added (or not) for flexible use for other things such as including for Testacular config)
-			if(conf.configPaths.noPrefix !==undefined && conf.configPaths.noPrefix.js !==undefined && conf.configPaths.noPrefix.css !==undefined) {
-				for(var ii=0; ii<conf.configPaths.noPrefix.js.length; ii++) {
-					grunt.config(conf.configPaths.noPrefix.js[ii], filePathsNoPrefix.js);
-				}
-				for(var ii=0; ii<conf.configPaths.noPrefix.css.length; ii++) {
-					grunt.config(conf.configPaths.noPrefix.css[ii], filePathsNoPrefix.css);
-				}
-			}
-			
-			if(conf.configPaths.jshint !==undefined && conf.configPaths.jshint.files !==undefined) {
-				//grunt.config(conf.configPaths.jshint.files, lintFiles);
-				//lintFiles =['test/*.js'];
-				for(var ii=0; ii<conf.configPaths.jshint.files.length; ii++) {
-					grunt.config(conf.configPaths.jshint.files[ii], lintFiles);
-				}
-			}
-			
-			if(conf.configPaths.uglify !==undefined && conf.configPaths.uglify.files !==undefined) {
-				//@todo - figure out how to make this a dynamic config value rather than hardcoded..
-				var fileTmp =conf.customMinifyFile;
-				var filesTmp ={
-					//fileTmp: lintFiles
-					//'<%= customMinifyFile %>': lintFiles		//works
-					//'<%= '+fileTmp+' %>': lintFiles
-					//'public/app/temp/custom.min.js': lintFiles
-				};
-				//filesTemp[fileTmp] =lintFiles;
-				//filesTemp['yes'] =lintFiles;
-				filesTmp['<%= customMinifyFile %>'] =lintFiles;
-				// var str1 ='<%= '+fileTmp+' %>';
-				// filesTmp[str1] =lintFiles;
-				//grunt.config(conf.configPaths.uglify.files, {'<%= customMinifyFile %>': lintFiles});
-				//grunt.config(conf.configPaths.uglify.files, {fileTmp: lintFiles});
-				//grunt.config(conf.configPaths.uglify.files.fileTmp, lintFiles);
-				//grunt.config(conf.configPaths.uglify.files, {'<%= "'+fileTmp+'" %>': lintFiles});
-				for(var ii=0; ii<conf.configPaths.uglify.files.length; ii++) {
-					grunt.config(conf.configPaths.uglify.files[ii], filesTmp);
-				}
-				//grunt.log.writeln('uglifyFiles: '+grunt.config('uglify.build.files'));
 			}
 		}
 
 		
-		//write the actual file using the template
-		var msg ='';
+
+		/**
+		write the actual file(s) using the grunt template(s)
+		@toc 4.
+		*/
+		// var msg ='';
 		for(var ff in conf.files) {
 			var src =conf.files[ff].src;
 			var dest =conf.files[ff].dest;
+			//if in production mode and have a production file destination, use that instead
 			if(gruntOptType =='prod' && conf.files[ff].destProd !=undefined) {
 				dest =conf.files[ff].destProd;
 			}
 			
-			msg+='src: '+src+' dest: '+dest+'\n';
+			// msg+='src: '+src+' dest: '+dest+'\n';
 			var tmpl = grunt.file.read(src);
 			grunt.file.write(dest, grunt.template.process(tmpl));
 		}
-		//grunt.log.writeln('writeFiles: '+msg);
+		// grunt.log.writeln('writeFiles: '+msg);
 		
+		
+
 		grunt.log.writeln('buildfiles done');
 	
 	});

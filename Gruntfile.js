@@ -12,8 +12,8 @@ Lint, concat, & minify (uglify) process (since ONLY want to lint & minify files 
 
 module.exports = function(grunt) {
 
-	var cfgJson = require('./config.json');
-	var buildfilesListObj = require('./test/config/buildfilesList');
+	var cfgJson = require('./config.json');		//configuration file with paths
+	var buildfilesListObj = require('./test/config/buildfilesList');		//the file with the object/arrays of all directories and files to form paths for (css, js, html)
 	var publicPathRelativeRoot ="test/";		//hardcoded
 	var publicPathRelative =publicPathRelativeRoot+"";		//hardcoded
 	var publicPathRelativeDot ="./"+publicPathRelative;
@@ -22,7 +22,8 @@ module.exports = function(grunt) {
 		'concatJs':"assets/main.js",
 		'concatCss':"assets/main.css",
 		'minJs':"assets/main-min.js",
-		'minCss':"assets/main-min.css"
+		'minCss':"assets/main-min.css",
+		'templatesJs':"assets/templates.js"
 	};
 	
 	var config ={
@@ -30,14 +31,11 @@ module.exports = function(grunt) {
 		customFile: publicPathRelative+'temp/custom.js'
 	};
 	
-  // Project configuration.
-  grunt.initConfig({
+	// Project configuration.
+	grunt.initConfig({
 		customMinifyFile: config.customMinifyFile,
 		customFile: config.customFile,
 		pkg: grunt.file.readJSON('package.json'),
-		
-		lintFilesJs: [],		//will be filled/created in buildfiles task
-		
 		cfgJson: grunt.file.readJSON('config.json'),
 		
 		//will be filled/created in buildfiles task
@@ -56,38 +54,75 @@ module.exports = function(grunt) {
 		publicPathRelative: publicPathRelative,
 		publicPathRelativeDot: publicPathRelativeDot,
 		buildfiles: {
-			staticPath: cfgJson.staticPath,
-			publicPath: publicPathRelativeDot,
-			customMinifyFile: config.customMinifyFile,
+			// customMinifyFile: config.customMinifyFile,
 			buildfilesArray: buildfilesListObj.files,
 			configPaths: {
+				//generic file lists for use elsewhere
 				noPrefix: {
-					js: ['filePathsJsNoPrefix'],
-					css: ['filePathsCssNoPrefix']
+					// prefix: '',
+					files: {
+						js: ['filePathsJsNoPrefix'],
+						css: ['filePathsCssNoPrefix']
+					}
 				},
+				//index.html file paths (have the static path prefix for use in <link rel="stylesheet" > and <script> tags)
 				indexFilePaths:{
-					js: ['filePathsJs'],
-					css: ['filePathsCss']
+					prefix: cfgJson.staticPath,
+					files: {
+						js: ['filePathsJs'],
+						css: ['filePathsCss']
+					}
 				},
-				concat:{
-					src:{
-						js: ['concat.devJs.src'],
+				//list of files to lint - will be stuffed into jshint grunt task variable(s)
+				jshint:{
+					prefix: publicPathRelativeDot,
+					fileGroup: 'custom',
+					files: {
+						js: ['jshint.beforeconcat']
+					}
+				},
+				//list of js files to concatenate together - will be stuffed into concat grunt task variable(s)
+				concatJsMin: {
+					prefix: publicPathRelativeDot,
+					fileGroup: 'ext',
+					additionalFiles: [config.customMinifyFile],
+					files: {
+						js: ['concat.devJs.src']
+					}
+				},
+				//list of css files to concat - will be stuffed into concat grunt task variable(s)
+				concatCss: {
+					prefix: publicPathRelativeDot,
+					fileGroup: 'all',
+					files: {
 						css: ['concat.devCss.src']
 					}
 				},
-				jshint:{
-					files: ['jshint.beforeconcat']
-				},
+				//list of files to uglify - will be stuffed into uglify grunt task variable(s)
 				uglify:{
-					files: ['uglify.build.files']
+					prefix: publicPathRelativeDot,
+					fileGroup: 'custom',
+					uglify: true,
+					files: {
+						js: ['uglify.build.files']
+					}
+				},
+				//list of html templates to join together to stuff in AngularJS $templateCache - will be stuffed into ngtemplates grunt task variable(s)
+				templates: {
+					prefix: publicPathRelativeDot,
+					files: {
+						html: ['ngtemplates.main.src']
+					}
 				}
 			},
 			files: {
+				//generate development version of index.html (with dynamically generated <link rel="stylesheet" > and <script> tags for resources)
 				indexHtml: {
 					src: publicPathRelative+"index-grunt.html",
 					dest: publicPathRelative+"index.html",
 					destProd: publicPathRelative+"index-dev.html"
 				},
+				//generate production version of index.html (with just the minified and concatenated versions of css and js)
 				indexHtmlProd: {
 					src: publicPathRelative+"index-prod-grunt.html",
 					dest: publicPathRelative+"index-prod.html",
@@ -114,25 +149,35 @@ module.exports = function(grunt) {
 			},
 			beforeconcat: []		//filled via buildfiles task
 		},
-    uglify: {
-      options: {
-        //banner: '/*! <%= cfgJson.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+		uglify: {
+			options: {
+				//banner: '/*! <%= cfgJson.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
 				mangle: false
-      },
-      build: {
+			},
+			build: {
 				files: {}		//filled via buildfiles task
-      }
-    }
-  });
+			}
+		},
+		ngtemplates: {
+			main: {
+				options: {
+					module: 'myApp'
+				},
+				src: [],		// will be filled via buildfiles task
+				dest: publicPathRelativeDot+paths.templatesJs
+			}
+		}
+	});
 
-  // Load plugins
+	// Load plugins
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
+	grunt.loadNpmTasks('grunt-angular-templates');
 	
 	//grunt.loadNpmTasks('grunt-buildfiles');
 	grunt.loadTasks('tasks');
 
-  // Default task(s).
-	grunt.registerTask('default', ['buildfiles', 'jshint:beforeconcat', 'uglify:build', 'concat:devJs', 'concat:devCss']);
+	// Default task(s).
+	grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'concat:devJs', 'concat:devCss']);
 };
