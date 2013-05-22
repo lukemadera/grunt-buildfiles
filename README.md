@@ -1,7 +1,7 @@
 # grunt-buildfiles
 Build and set javascript and css assets dynamically for other grunts tasks (i.e. jshint, concat, uglify) and to build index.html and other grunt template files
 
-Basically this allows you to define all your resources/dependencies (css, javascript files) ONCE in a javascript file and then use that single file to lint, concat, and minify these assets AND use the grunt template writer to dynamically build files such as an index.html file that generates the appropriate <link..> and <script..> tags for these assets.
+Basically this allows you to define all your resources/dependencies (css, javascript files) ONCE in a javascript file and then use that single file to lint, concat, and minify these assets AND use the grunt template writer to dynamically build files such as an index.html file that generates the appropriate `<link..>` and `<script..>` tags for these assets.
 
 For more information, see the comments and documentation in the `tasks/buildfiles.js` grunt task file as well as the `Gruntfile.js` and `test/config/buildfilesList.js` files.
 
