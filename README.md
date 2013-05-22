@@ -1,5 +1,9 @@
 # grunt-buildfiles
-Build and set javascript and css assets dynamically for other grunts tasks (i.e. jshint, concat, uglify) and to build index.html and other grunt template files
+Build and set javascript, css, and html assets dynamically for other grunts tasks (i.e. jshint, concat, uglify) and to build index.html and other grunt template files.
+
+This plugin basically does 2 things:
+1. replace glob file path definitions for grunt tasks with explicitly defined lists of files based on ONE config file. So if you want to exclude one or more files from a grunt task, rather than having to list out all the ones you want to include in the Gruntfile, you can list them once (by directory) in buildfilesList.js and then use them in as many grunt tasks as you like. This keeps your Gruntfile DRY (Don't Repeat Yourself) and keeps ONE source of truth for all your assets for easier maintenance. Basically buildfilesList.js controls your assets for your entire app/frontend.
+2. use grunt templates to generate files based off one config file. Combined with the above, this allows you to leverage ONE config file to build all your resources across all languages (CSS, JS, HTML) without having to hardcode anything outside of this one config file. Basically dynamic path names for referencing all assets, anywhere in your app.
 
 Basically this allows you to define all your resources/dependencies (css, javascript files) ONCE in a javascript file and then use that single file to lint, concat, and minify these assets AND use the grunt template writer to dynamically build files such as an index.html file that generates the appropriate `<link..>` and `<script..>` tags for these assets.
 
@@ -30,7 +34,9 @@ grunt.loadNpmTasks('grunt-buildfiles');
 Example of JUST the buildfiles task config - NOTE this plugin depends on and works with other plugins and configs so this is INCOMPLETE - see the "test" directory for a full example of all necessary files and configurations.
 ```js
 	buildfiles: {
-		buildfilesArray: buildfilesListObj.files,
+		buildfilesArray: buildfilesListObj.files,		//define where your list of files/directories are for all your assets
+		
+		//this takes your buildfilesList of all js, css, and html files and generates full paths to all these assets then stuffs them into other grunt task file paths.
 		configPaths: {
 			//generic file lists for use elsewhere
 			noPrefix: {
@@ -90,6 +96,8 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 				}
 			}
 		},
+		
+		//this will use `grunt.file.write` and a template file to generate a final file (dynamically inserting path names and other config parameters appropriately). NOTE: YOU must write the grunt template files that will be used to generate the files.
 		files: {
 			//generate development version of index.html (with dynamically generated <link rel="stylesheet" > and <script> tags for resources)
 			indexHtml: {

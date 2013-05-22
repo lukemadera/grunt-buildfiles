@@ -55,7 +55,9 @@ module.exports = function(grunt) {
 		publicPathRelativeDot: publicPathRelativeDot,
 		buildfiles: {
 			// customMinifyFile: config.customMinifyFile,
-			buildfilesArray: buildfilesListObj.files,
+			buildfilesArray: buildfilesListObj.files,		//define where your list of files/directories are for all your assets
+			
+			//this takes your buildfilesList of all js, css, and html files and generates full paths to all these assets then stuffs them into other grunt task file paths.
 			configPaths: {
 				//generic file lists for use elsewhere
 				noPrefix: {
@@ -115,6 +117,8 @@ module.exports = function(grunt) {
 					}
 				}
 			},
+			
+			//this will use `grunt.file.write` and a template file to generate a final file (dynamically inserting path names and other config parameters appropriately). NOTE: YOU must write the grunt template files that will be used to generate the files.
 			files: {
 				//generate development version of index.html (with dynamically generated <link rel="stylesheet" > and <script> tags for resources)
 				indexHtml: {
