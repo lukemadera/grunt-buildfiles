@@ -131,6 +131,12 @@ module.exports = function(grunt) {
 					src: publicPathRelative+"index-prod-grunt.html",
 					dest: publicPathRelative+"index-prod.html",
 					destProd: publicPathRelative+"index.html"
+				},
+				//with ifOpt to conditionally write a file
+				indexHtmlIf: {
+					ifOpt: {key:'if', val:'yes'},		//pass in options via command line with `--if=yes`
+					src: publicPathRelative+"index-if-grunt.html",
+					dest: publicPathRelative+"index-if.html"
 				}
 			}
 		},

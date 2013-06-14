@@ -160,16 +160,32 @@ module.exports = function(grunt) {
 		*/
 		// var msg ='';
 		for(var ff in conf.files) {
-			var src =conf.files[ff].src;
-			var dest =conf.files[ff].dest;
-			//if in production mode and have a production file destination, use that instead
-			if(gruntOptType =='prod' && conf.files[ff].destProd !=undefined) {
-				dest =conf.files[ff].destProd;
+			//check to see if should write this file at all using 'ifOpt' param which corresponds to command line arguments (i.e. `--if=yes`) which correspond to grunt.option here.
+			var goTrig =true;
+			if(conf.files[ff].ifOpt !==undefined) {
+				goTrig =false;
+				if(grunt.option(conf.files[ff].ifOpt.key)) {
+					if(grunt.option(conf.files[ff].ifOpt.key) ==conf.files[ff].ifOpt.val) {
+						goTrig =true;
+					}
+				}
+				if(!goTrig) {
+					grunt.log.writeln('buildfiles skip file due to ifOpt: src: '+conf.files[ff].src);
+				}
 			}
 			
-			// msg+='src: '+src+' dest: '+dest+'\n';
-			var tmpl = grunt.file.read(src);
-			grunt.file.write(dest, grunt.template.process(tmpl));
+			if(goTrig) {
+				var src =conf.files[ff].src;
+				var dest =conf.files[ff].dest;
+				//if in production mode and have a production file destination, use that instead
+				if(gruntOptType =='prod' && conf.files[ff].destProd !=undefined) {
+					dest =conf.files[ff].destProd;
+				}
+				
+				// msg+='src: '+src+' dest: '+dest+'\n';
+				var tmpl = grunt.file.read(src);
+				grunt.file.write(dest, grunt.template.process(tmpl));
+			}
 		}
 		// grunt.log.writeln('writeFiles: '+msg);
 		
