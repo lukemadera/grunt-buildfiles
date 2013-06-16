@@ -123,20 +123,20 @@ module.exports = function(grunt) {
 				//generate development version of index.html (with dynamically generated <link rel="stylesheet" > and <script> tags for resources)
 				indexHtml: {
 					src: publicPathRelative+"index-grunt.html",
-					dest: publicPathRelative+"index.html",
-					destProd: publicPathRelative+"index-dev.html"
+					dest: publicPathRelative+"index.html"
 				},
+				//NOTE: the below all will OVERWRITE index.html (IF itOpts are set appropriately) so these must be AFTER the above. The LAST listed one will take precedence if it's ifOpts are set and will overwrite ALL other `index.html` files that were previously written.
 				//generate production version of index.html (with just the minified and concatenated versions of css and js)
 				indexHtmlProd: {
+					ifOpts: [{key:'type', val:'prod'}],		//pass in options via command line with `--type=prod`
 					src: publicPathRelative+"index-prod-grunt.html",
-					dest: publicPathRelative+"index-prod.html",
-					destProd: publicPathRelative+"index.html"
+					dest: publicPathRelative+"index.html"
 				},
-				//with ifOpt to conditionally write a file
+				//with multiple ifOpts to conditionally write a file
 				indexHtmlIf: {
-					ifOpt: {key:'if', val:'yes'},		//pass in options via command line with `--if=yes`
+					ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}],		//pass in options via command line with `--if=yes --if2=maybe`
 					src: publicPathRelative+"index-if-grunt.html",
-					dest: publicPathRelative+"index-if.html"
+					dest: publicPathRelative+"index-if.html"		//can also just over-write to `index.html` here. But note that if BOTH `--type=prod` AND `--if=yes` are set, that this will OVERWRITE the index-prod-grunt writing above!
 				}
 			}
 		},

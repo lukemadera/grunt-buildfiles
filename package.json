@@ -1,7 +1,7 @@
 {
   "name": "grunt-buildfiles",
   "description": "Build and set javascript and css assets dynamically for other grunts tasks (jshint, concat, uglify) and to build index.html and other grunt template files",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "homepage": "https://github.com/lukemadera/grunt-buildfiles",
   "author": {
     "name": "Luke Madera",

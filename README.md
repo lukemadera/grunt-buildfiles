@@ -103,13 +103,18 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 			indexHtml: {
 				src: publicPathRelative+"index-grunt.html",
 				dest: publicPathRelative+"index.html",
-				destProd: publicPathRelative+"index-dev.html"
 			},
 			//generate production version of index.html (with just the minified and concatenated versions of css and js)
 			indexHtmlProd: {
+				ifOpts: [{key:'type', val:'prod'}],		//pass in options via command line with `--type=prod`
 				src: publicPathRelative+"index-prod-grunt.html",
-				dest: publicPathRelative+"index-prod.html",
-				destProd: publicPathRelative+"index.html"
+				dest: publicPathRelative+"index-prod.html"
+			},
+			//with multiple ifOpts to conditionally write a file
+			indexHtmlIf: {
+				ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}],		//pass in options via command line with `--if=yes --if2=maybe`
+				src: publicPathRelative+"index-if-grunt.html",
+				dest: publicPathRelative+"index-if.html"		//can also just over-write to `index.html` here. But note that if BOTH `--type=prod` AND `--if=yes` are set, that this will OVERWRITE the index-prod-grunt writing above!
 			}
 		}
 	}
@@ -118,7 +123,7 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 ## Development (see https://npmjs.org/doc/developers.html for notes on publishing npm modules in general)
 - run grunt to ensure no issues
 - bump version number in package.json
-- update CHANGELOG file
+- update CHANGELOG (and potentially this README) file
 - git commit changes
 - npm publish
 

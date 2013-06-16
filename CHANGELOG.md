@@ -1,3 +1,8 @@
+## v0.2.2
+### Breaking changes
+- changed `ifOpt` to `ifOpts` so can now pass in multiple options. Multiple options are checked as an `and` so ALL options must match for the condition to be true.
+- removed `destProd` when writing files - just use `ifOpts` now with `src` and `dest`.
+
 ## v0.2.1
 - add `ifOpt` support for conditionally writing files. This allows setting command line arguments (i.e. `--if=yes`) to dictate whether or not a file should be written. This is useful if have multiple build sources (pending configuration and use) that all go to the same `index.html` so `index.html` is just over-written multiple times but rather only the APPROPRIATE source file is used.
 

@@ -16,7 +16,7 @@ Can handle separating external (already minified) files from the rest to avoid a
 
 
 @toc
-1. pull in grunt options and config
+1. pull in grunt config
 2. init and form file paths
 3. set grunt.config paths (for use later in other grunt tasks)
 4. write the actual file(s) using the grunt template(s)
@@ -27,19 +27,10 @@ module.exports = function(grunt) {
 	grunt.registerTask("buildfiles", "Generate resource file names and build final files using grunt templates depending on server environment config", function() {
 	
 		/**
-		Pull in grunt options and config.
-		See if in production ('prod') mode or not based off command line parameters (i.e. `grunt --type=prod` )
+		Pull in grunt config.
 		@toc 1.
 		*/
 		var conf =grunt.config('buildfiles');
-		
-		//see if in production mode (via grunt command line option) or not
-		var gruntOptType =false;
-		if(grunt.option('type')) {
-			gruntOptType =grunt.option('type');
-		}
-		grunt.log.writeln('type: '+gruntOptType);
-		
 		var files =conf.buildfilesArray;
 
 		
@@ -155,39 +146,55 @@ module.exports = function(grunt) {
 		
 
 		/**
-		write the actual file(s) using the grunt template(s)
+		write the actual file(s) using the grunt template(s). `ifOpts` are used with command line options to see which files (if any) to skip. ifOpts are treated as an `and` so if multiple are specified, ALL must match for the file to be written.
 		@toc 4.
 		*/
-		// var msg ='';
+		//will output which files are skiped and which are written
+		var outputFiles ={
+			skip: [],
+			write: [],
+		};
 		for(var ff in conf.files) {
-			//check to see if should write this file at all using 'ifOpt' param which corresponds to command line arguments (i.e. `--if=yes`) which correspond to grunt.option here.
+			//check to see if should write this file at all using 'ifOpts' param which corresponds to command line arguments (i.e. `--if=yes`) which correspond to grunt.option here.
 			var goTrig =true;
-			if(conf.files[ff].ifOpt !==undefined) {
-				goTrig =false;
-				if(grunt.option(conf.files[ff].ifOpt.key)) {
-					if(grunt.option(conf.files[ff].ifOpt.key) ==conf.files[ff].ifOpt.val) {
-						goTrig =true;
+			if(conf.files[ff].ifOpts !==undefined) {
+				//go through ALL ifOpts and find at least ONE that either is undefined or does not match, then set goTrig to false
+				var ii;
+				for(ii =0; ii<conf.files[ff].ifOpts.length; ii++) {
+					if(grunt.option(conf.files[ff].ifOpts[ii].key) ===undefined || grunt.option(conf.files[ff].ifOpts[ii].key) != conf.files[ff].ifOpts[ii].val) {
+						goTrig =false;
+						outputFiles.skip.push('src: '+conf.files[ff].src);
+						// grunt.log.writeln('buildfiles SKIP file due to ifOpts: src: '+conf.files[ff].src);
 					}
-				}
-				if(!goTrig) {
-					grunt.log.writeln('buildfiles skip file due to ifOpt: src: '+conf.files[ff].src);
 				}
 			}
 			
 			if(goTrig) {
 				var src =conf.files[ff].src;
 				var dest =conf.files[ff].dest;
-				//if in production mode and have a production file destination, use that instead
-				if(gruntOptType =='prod' && conf.files[ff].destProd !=undefined) {
-					dest =conf.files[ff].destProd;
-				}
-				
-				// msg+='src: '+src+' dest: '+dest+'\n';
 				var tmpl = grunt.file.read(src);
 				grunt.file.write(dest, grunt.template.process(tmpl));
+				// grunt.log.writeln('buildfiles writing file: src: '+src+' dest: '+dest);
+				outputFiles.write.push('src: '+src+' dest: '+dest);
 			}
 		}
-		// grunt.log.writeln('writeFiles: '+msg);
+		//output message detailing which files were written and which were skipped
+		var msg ='\nbuildfiles writing files (if multiple files go to the same destination, the LAST one is the src that will have been used):\n';
+		if(outputFiles.skip.length >0) {
+			msg +='SKIPPED files (due to ifOpts):\n';
+			var ii;
+			for(ii =0; ii<outputFiles.skip.length; ii++) {
+				msg+=outputFiles.skip[ii]+'\n';
+			}
+		}
+		if(outputFiles.write.length >0) {
+			msg +='WRITTEN files:\n';
+			var ii;
+			for(ii =0; ii<outputFiles.write.length; ii++) {
+				msg+=outputFiles.write[ii]+'\n';
+			}
+		}
+		grunt.log.writeln(msg);
 		
 		
 
