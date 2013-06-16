@@ -1,4 +1,4 @@
-## v0.2.2
+## v0.2.21
 ### Breaking changes
 - changed `ifOpt` to `ifOpts` so can now pass in multiple options. Multiple options are checked as an `and` so ALL options must match for the condition to be true.
 - removed `destProd` when writing files - just use `ifOpts` now with `src` and `dest`.

@@ -165,6 +165,7 @@ module.exports = function(grunt) {
 						goTrig =false;
 						outputFiles.skip.push('src: '+conf.files[ff].src);
 						// grunt.log.writeln('buildfiles SKIP file due to ifOpts: src: '+conf.files[ff].src);
+						break;
 					}
 				}
 			}
