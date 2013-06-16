@@ -126,6 +126,7 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 - update CHANGELOG (and potentially this README) file
 - git commit changes
 - npm publish
+- push to github (to update there as well)
 
 
 ## TODO
