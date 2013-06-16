@@ -175,7 +175,8 @@ module.exports = function(grunt) {
 				var tmpl = grunt.file.read(src);
 				grunt.file.write(dest, grunt.template.process(tmpl));
 				// grunt.log.writeln('buildfiles writing file: src: '+src+' dest: '+dest);
-				outputFiles.write.push('src: '+src+' dest: '+dest);
+				// outputFiles.write.push('src: '+src+' dest: '+dest);
+				outputFiles.write.push(dest+' src: '+src);
 			}
 		}
 		//output message detailing which files were written and which were skipped
@@ -184,14 +185,14 @@ module.exports = function(grunt) {
 			msg +='SKIPPED files (due to ifOpts):\n';
 			var ii;
 			for(ii =0; ii<outputFiles.skip.length; ii++) {
-				msg+=outputFiles.skip[ii]+'\n';
+				msg+=(ii+1)+'. '+outputFiles.skip[ii]+'\n';
 			}
 		}
 		if(outputFiles.write.length >0) {
 			msg +='WRITTEN files:\n';
 			var ii;
 			for(ii =0; ii<outputFiles.write.length; ii++) {
-				msg+=outputFiles.write[ii]+'\n';
+				msg+=(ii+1)+'. '+outputFiles.write[ii]+'\n';
 			}
 		}
 		grunt.log.writeln(msg);
