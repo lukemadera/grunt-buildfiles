@@ -1,0 +1,133 @@
+{
+	"baseLessPath":"common/less/_base.less",
+	"dirs":[
+		{
+			"name": "common",
+			"path": "common",
+			"comment": "'comment' keys will be ignored and are for documentation purposes only",
+			"dirs":[
+				{
+					"name":"js",
+					"path":"js",
+					"files": {
+						"js": ["file1.js", "file2.js"]
+					}
+				},
+				{
+					"name":"less",
+					"comment": "'path' key is not required - it will default to the 'name' field if omitted",
+					"files": {
+						"less": ["layout.less"]
+					}
+				},
+				{
+					"name":"html",
+					"path":"html",
+					"files": {
+						"html": ["file1.html"]
+					}
+				}
+			]
+		},
+		{
+			"name":"lib",
+			"path":"lib",
+			"dirs":[
+				{
+					"name":"ext1",
+					"path":"ext1",
+					"files": {
+						"js": ["extFile1.min.js"],
+						"css": ["extFile1.min.css"]
+					}
+				},
+				{
+					"name":"ext1NoMin",
+					"path":"ext1",
+					"comment":"Can break the same directory into multiple modules - in this case we are separating the minified file from the non-minified file",
+					"files": {
+						"js": ["extFile1.1.js"],
+						"css": ["extFile1.1.css"]
+					}
+				},
+				{
+					"name":"ext3",
+					"files": {
+						"js": ["extFile3.min.js"]
+					}
+				}
+			]
+		},
+		{
+			"name":"libExt2",
+			"path":"lib/ext2",
+			"comment": "Do not have to nested directories - can do directly down to a subpath from the start. Could have also put this in the 'lib' object above as well.",
+			"files": {
+				"js":["extFile2.js"]
+			}
+		},
+		{
+			"name":"badName",
+			"path":"badPath",
+			"active":0,
+			"comment": "These files do not exist but it is okay because this whole section will be skipped because 'active' is 0",
+			"files": {
+				"js":["fakeFile1.js", "fakeFile2.js"]
+			}
+		},
+		{
+			"name":"modules",
+			"dirs":[
+				{
+					"name":"mod1",
+					"files": {
+						"js":["mod1.js"],
+						"html":["mod1.html"],
+						"css":["mod1.css"]
+					},
+					"dirs":[
+						{
+							"name":"mod1sub",
+							"files": {
+								"js":["mod1sub.js"],
+								"html":["mod1sub.html"],
+								"css":["mod1sub.css"]
+							}
+						}
+					]
+				},
+				{
+					"name":"mod3",
+					"comment":"Files will be written in the order they are in the array - so if order matters, put the ones you need first toward the top of the array",
+					"files": {
+						"js":["mod3.js"],
+						"html":["mod3.html"],
+						"less":["mod3.less"]
+					}
+				},
+				{
+					"name":"mod2",
+					"files": {
+						"js":["mod2.js"],
+						"html":["mod2.html"],
+						"less":["mod2.less"]
+					}
+				}
+			]
+		},
+		{
+			"name":"build",
+			"path":"build",
+			"files":{
+				"css":["main.css"]
+			}
+		},
+		{
+			"name":"buildTemp",
+			"path":"build/temp",
+			"files": {
+				"js":["custom.min.js"]
+			}
+		}
+	]
+}

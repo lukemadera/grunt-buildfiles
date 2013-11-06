@@ -1,0 +1,1 @@
+var div2 ='yes';

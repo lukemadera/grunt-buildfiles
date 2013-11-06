@@ -1,0 +1,78 @@
+//in house / non-3rd party files
+.clearfix ()
+{
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+.clearfix:after {
+	.clearfix();
+}
+
+.center {
+	/*
+	//this margin breaks flexbox in safari on Max/OSX/iOS..
+	margin-left:auto;
+	margin-right:auto;
+	*/
+	text-align:center;
+}
+.center-margin {
+	margin-left:auto;
+	margin-right:auto;
+}
+.left {
+	text-align:left;
+}
+.right {
+	text-align:right;
+}
+
+.inline-block {
+	display:inline-block;
+}
+
+
+//float left & right - copying Twitter Bootstrap class names
+.pull-left {
+	float:left;
+}
+.pull-right {
+	float:right;
+}
+
+
+//2 column fixed + fluid layout (using floats instead of flexbox)
+.fluid-left {
+	float:left;
+	width:100%;
+}
+.fixed-right {
+	float:right;
+	/*
+	width:50px;
+	margin-left:-50px;
+	*/
+}
+.fixed-right(@width) {
+	width:@width;
+	margin-left:(-1 *@width);
+	text-align:right;
+}
+.fluid-right {
+	float:right;
+	width:100%;
+}
+.fixed-left {
+	float:left;
+	/*
+	width:50px;
+	margin-right:-50px;
+	*/
+}
+.fixed-left(@width) {
+	width:@width;
+	margin-right:(-1 *@width);
+}

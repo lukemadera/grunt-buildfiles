@@ -1,0 +1,21 @@
+{
+	"all": {
+		"modules":["_all"]
+	},
+	"allNoBuild": {
+		"modules":["_all"],
+		"skipModules": ["build", "buildTemp"]
+	},
+	"minified": {
+		"modules":["lib.ext3", "lib.ext1"],
+		"comment":"Use dot notation to combine nested names"
+	},
+	"allMinified": {
+		"modules":["lib.ext3", "lib.ext1", "buildTemp"]
+	},
+	"nonMinified": {
+		"modules":["_all"],
+		"comment":"'_all' is a special/reserved word for getting ALL modules",
+		"skipModules":["build", "buildTemp", "lib.ext3", "lib.ext1"]
+	}
+}

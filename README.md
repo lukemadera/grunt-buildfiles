@@ -26,6 +26,83 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 grunt.loadNpmTasks('grunt-buildfiles');
 ```
 
+There's 3 steps for you to do to use this plugin:
+1. create your buildfilesModules.json and buildfilesModuleGroups.json files (and reference/`require` them in Gruntfile.js)
+2. set/define your configPaths object in Gruntfile.js for what each file group is and where to stuff it (what grunt (task) property to set it to)
+3. (optional) set/define your files object in Gruntfile.js for what files to write/template
+
+
+## Documentation
+### buildfilesModules.json
+@param {String} [baseLessPath] The path to the _base.less file that all other .less files will be @import'ed into (if the file does not exist, it will be created. If it exists, it will be appended to at the bottom of the file).
+
+@param {Array} dirs The directories to include. These can be infinitely nested. Each `dirs` is an object with the following keys:
+	@param {String} name The name / identifier for this object/item/directory
+	
+	@param {String} [path] File path for where this directory is. Defaults to the `name` key if omitted
+	
+	@param {Array} [dirs] Allows further nesting for sub-directories / files (without having to type out the full paths each time - `path` is chained down through the `dirs`. NOTE: one of `dirs` or `files` must exist.
+	
+	@param {Object} [files] The actual files to add in by file type, available file types below. NOTE: one of `dirs` or `files` must exist.
+		@param {Array} [js] All the javascript files
+		
+		@param {Array} [html] All the html / template files
+		
+		@param {Array} [less] All the LESS (CSS-preprocessor) files. All less files will be @import'ed into _base.less and then the less can be compiled to final CSS.
+		
+		@param {Array} [css] All the CSS files
+	
+	@param {Number} [active =1] 0 to NOT include this object/directory - all sub-directories will be ignored as well. This is similar to commenting out a module / block of code in javascript, but JSON doesn't allow comments.
+	
+	@param {String} [comment] Placeholder for any comments (since JSON doesn't allow comments) - will be ignored.
+
+### buildfilesModuleGroups.json
+@param {Object} key Each key is a moduleGroup name, and each of those is:
+	@param {Array} modules An array of all modules (from buildfilesModules.json) to include OR `_all` which is a special keyword for ALL modules.
+	
+	@param {Array} [skipModules] An array of modules to NOT include (these will be REMOVED the `modules` array list above)
+	
+	@param {String} [comment] Placeholder for any comments (since JSON doesn't allow comments) - will be ignored.
+	
+	
+### buildfiles Gruntfile.js properties
+@param {Object} buildfilesModules The JSON object from the buildfilesModules.json file
+
+@param {Object} buildfilesModuleGroups The JSON object from the buildfilesModuleGroups.json file
+
+@param {Object} configPaths Tells which grunt variables to stuff with the file lists based on the module group used (and optionally a prefix). Define a new key for each file group you want to write; each item is an object of:
+	@param {String} moduleGroup The name of the module group that tells which files to use - MUST match a key set in buildfilesModuleGroups.json
+		@example
+			moduleGroup: 'all'
+	
+	@param {String} [prefix] Optional prefix to prepend to EACH file in this file group (i.e. 'app/src/') - this allows differentiating the same file groups for different purposes (i.e. for writing index.html vs adding files to be linted or included in tests - the relative paths may differ so this allows setting it)
+		@example
+			prefix: cfgJson.staticPath
+		@example
+			prefix: 'app/src'
+	
+	@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to.
+		@example
+			outputFiles: {
+				js: ['filePathsJs'],
+				css: ['filePathsCss']
+			}
+			
+@param {Object} files Files to write/template with grunt.file.write. Define a new key for each file to write, key item is and object of:
+	@param {String} src The grunt template file to use to build/write the final file
+		@example
+			src: publicPathRelative+"index-grunt.html"
+	
+	@param {String} dest The final file destination
+		@example
+			dest: publicPathRelative+"index.html"
+			
+	@param {Array} [ifOpts] Conditional rules that tell when to write this file based on command line options. File will only be written if ALL command line options are set and match the values for that key.
+		@example
+			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
+		@example
+			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
+
 
 ## Buildfiles task
 
@@ -33,91 +110,7 @@ grunt.loadNpmTasks('grunt-buildfiles');
 
 Example of JUST the buildfiles task config - NOTE this plugin depends on and works with other plugins and configs so this is INCOMPLETE - see the "test" directory for a full example of all necessary files and configurations.
 ```js
-	buildfiles: {
-		buildfilesArray: buildfilesListObj.files,		//define where your list of files/directories are for all your assets
-		
-		//this takes your buildfilesList of all js, css, and html files and generates full paths to all these assets then stuffs them into other grunt task file paths.
-		configPaths: {
-			//generic file lists for use elsewhere
-			noPrefix: {
-				// prefix: '',
-				files: {
-					js: ['filePathsJsNoPrefix'],
-					css: ['filePathsCssNoPrefix']
-				}
-			},
-			//index.html file paths (have the static path prefix for use in <link rel="stylesheet" > and <script> tags)
-			indexFilePaths:{
-				prefix: cfgJson.staticPath,
-				files: {
-					js: ['filePathsJs'],
-					css: ['filePathsCss']
-				}
-			},
-			//list of files to lint - will be stuffed into jshint grunt task variable(s)
-			jshint:{
-				prefix: publicPathRelativeDot,
-				fileGroup: 'custom',
-				files: {
-					js: ['jshint.beforeconcat']
-				}
-			},
-			//list of js files to concatenate together - will be stuffed into concat grunt task variable(s)
-			concatJsMin: {
-				prefix: publicPathRelativeDot,
-				fileGroup: 'ext',
-				additionalFiles: [config.customMinifyFile],
-				files: {
-					js: ['concat.devJs.src']
-				}
-			},
-			//list of css files to concat - will be stuffed into concat grunt task variable(s)
-			concatCss: {
-				prefix: publicPathRelativeDot,
-				fileGroup: 'all',
-				files: {
-					css: ['concat.devCss.src']
-				}
-			},
-			//list of files to uglify - will be stuffed into uglify grunt task variable(s)
-			uglify:{
-				prefix: publicPathRelativeDot,
-				fileGroup: 'custom',
-				uglify: true,
-				files: {
-					js: ['uglify.build.files']
-				}
-			},
-			//list of html templates to join together to stuff in AngularJS $templateCache - will be stuffed into ngtemplates grunt task variable(s)
-			templates: {
-				prefix: publicPathRelativeDot,
-				files: {
-					html: ['ngtemplates.main.src']
-				}
-			}
-		},
-		
-		//this will use `grunt.file.write` and a template file to generate a final file (dynamically inserting path names and other config parameters appropriately). NOTE: YOU must write the grunt template files that will be used to generate the files.
-		files: {
-			//generate development version of index.html (with dynamically generated <link rel="stylesheet" > and <script> tags for resources)
-			indexHtml: {
-				src: publicPathRelative+"index-grunt.html",
-				dest: publicPathRelative+"index.html",
-			},
-			//generate production version of index.html (with just the minified and concatenated versions of css and js)
-			indexHtmlProd: {
-				ifOpts: [{key:'type', val:'prod'}],		//pass in options via command line with `--type=prod`
-				src: publicPathRelative+"index-prod-grunt.html",
-				dest: publicPathRelative+"index-prod.html"
-			},
-			//with multiple ifOpts to conditionally write a file
-			indexHtmlIf: {
-				ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}],		//pass in options via command line with `--if=yes --if2=maybe`
-				src: publicPathRelative+"index-if-grunt.html",
-				dest: publicPathRelative+"index-if.html"		//can also just over-write to `index.html` here. But note that if BOTH `--type=prod` AND `--if=yes` are set, that this will OVERWRITE the index-prod-grunt writing above!
-			}
-		}
-	}
+	//@todo - re-copy Gruntfile.js when done
 ```
 
 ## Development (see https://npmjs.org/doc/developers.html for notes on publishing npm modules in general)

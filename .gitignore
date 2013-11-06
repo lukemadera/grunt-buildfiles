@@ -5,8 +5,8 @@ npm-debug.log
 *.DS_Store
 
 #ignore files compiled / built by grunt
-test/assets
-test/temp
+test/build
+#test/build/temp
 test/index.html
 test/index-prod.html
 test/index-dev.html
