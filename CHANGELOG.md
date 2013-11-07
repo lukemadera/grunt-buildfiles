@@ -1,3 +1,7 @@
+## 0.3.2
+## Bug Fixes
+- Actually support blank `path` values if want to put the directory as part of the file name (last fix did not actually work fully, was another case)
+
 ## 0.3.1
 ## Features
 - Support blank `path` values if want to put the directory as part of the file name

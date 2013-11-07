@@ -5,6 +5,7 @@ npm-debug.log
 *.DS_Store
 
 #ignore files compiled / built by grunt
+test/common/less/_base.less
 test/build
 #test/build/temp
 test/index.html
