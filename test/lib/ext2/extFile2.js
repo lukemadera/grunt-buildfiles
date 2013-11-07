@@ -1,1 +1,1 @@
-var test =2;
+var extFile2 =2;

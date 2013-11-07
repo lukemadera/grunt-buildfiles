@@ -1,6 +1,13 @@
 {
-	"baseLessPath":"common/less/_base.less",
 	"dirs":[
+		{
+			"comment": "Need this at top since the order of css matters and want the base.css file FIRST",
+			"name":"buildTempCss",
+			"path":"build/temp",
+			"files": {
+				"css":["base.css"]
+			}
+		},
 		{
 			"name": "common",
 			"path": "common",
@@ -91,7 +98,7 @@
 							"files": {
 								"js":["mod1sub.js"],
 								"html":["mod1sub.html"],
-								"css":["mod1sub.css"]
+								"less":["mod1sub.less"]
 							}
 						}
 					]

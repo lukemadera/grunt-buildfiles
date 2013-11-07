@@ -1,3 +1,1 @@
-var yes =2;
-
-var no =3;
+var file1 =2;

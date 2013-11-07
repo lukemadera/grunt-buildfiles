@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <%
+	<%
 	var cfgJson = grunt.config('cfgJson');
 	%>
-  <title><% print(cfgJson.title); %></title>
+	<title><% print(cfgJson.title); %></title>
 	
 <%
 var filePath =grunt.config('filePathMinCss');
@@ -19,6 +19,10 @@ print('\t<link rel="stylesheet" href="' + filePath + '"/>\n');
 var filePath =grunt.config('filePathConcatJs');
 var filePath =grunt.config('filePathMinJs');
 print('\t<script type="text/javascript" src="' + filePath + '"></script>\n');
+%>
+
+<%
+	print('\t<script type="text/javascript" src="'+cfgJson.staticPath+'build/templates.js"></script>\n');
 %>
 
 </body>

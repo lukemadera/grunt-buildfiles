@@ -1,3 +1,1 @@
-var yes =4;
-
-var maybe =5;
+var file2 =4;

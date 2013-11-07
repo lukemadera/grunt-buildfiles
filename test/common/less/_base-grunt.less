@@ -1,0 +1,8 @@
+@import url('../../lib/lesshat/lesshat.less');
+
+<%
+var filePaths = grunt.config('filePathsLess');
+for(var ii=0; ii<filePaths.length; ii++) {
+	print("@import url('" + filePaths[ii] + "');\n");
+}
+%>

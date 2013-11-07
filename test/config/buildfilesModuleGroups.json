@@ -5,17 +5,18 @@
 	"allNoBuild": {
 		"modules":["_all"],
 		"comment":"'_all' is a special/reserved word for getting ALL modules",
-		"skipModules": ["build", "buildTemp"]
+		"skipModules": ["build", "buildTemp", "buildTempCss"]
 	},
-	"minified": {
-		"modules":["lib.ext3", "lib.ext1"],
-		"comment":"Use dot notation to combine nested names"
+	"allNoBuildCss": {
+		"modules":["_all"],
+		"comment":"like 'allNoBuild' except we WANT 'buildTempCss', which has compiled 'base.css' (from '_base.less') in it",
+		"skipModules": ["build", "buildTemp"]
 	},
 	"allMinified": {
 		"modules":["lib.ext3", "lib.ext1", "buildTemp"]
 	},
 	"nonMinified": {
 		"modules":["_all"],
-		"skipModules":["build", "buildTemp", "lib.ext3", "lib.ext1"]
+		"skipModules":["build", "buildTemp", "buildTempCss", "lib.ext3", "lib.ext1"]
 	}
 }

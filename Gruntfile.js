@@ -20,13 +20,16 @@ module.exports = function(grunt) {
 	var publicPathRelative =publicPathRelativeRoot+"";		//hardcoded
 	var publicPathRelativeDot ="./"+publicPathRelative;
 	
-	var paths = {		//publicPathRelative will be prepended
-		'concatJs':"build/main.js",
-		'concatCss':"build/main.css",
-		'minJs':"build/main-min.js",
-		'minCss':"build/main-min.css",
-		'templatesJs':"build/templates.js"
+	//publicPathRelative will be prepended
+	var buildDir ="build";
+	var paths = {
+		'concatJs':buildDir+"/main.js",
+		'concatCss':buildDir+"/main.css",
+		'minJs':buildDir+"/main-min.js",
+		'minCss':buildDir+"/main-min.css",
+		'templatesJs':buildDir+"/templates.js"
 	};
+	var buildPath =publicPathRelative+buildDir;
 	
 	var config ={
 		customMinifyFile: publicPathRelative+'build/temp/custom.min.js',
@@ -43,6 +46,7 @@ module.exports = function(grunt) {
 		//will be filled/created in buildfiles task
 		filePathsJs: '',
 		filePathsCss: '',
+		filePathsLess: '',
 		filePathsJsNoPrefix:        '',		//will be filled/created in buildfiles task
 		filePathsCssNoPrefix:        '',		//will be filled/created in buildfiles task
 		filePathConcatJs: cfgJson.serverPath+paths.concatJs,
@@ -55,6 +59,7 @@ module.exports = function(grunt) {
 		publicPathRelativeRoot: publicPathRelativeRoot,
 		publicPathRelative: publicPathRelative,
 		publicPathRelativeDot: publicPathRelativeDot,
+		buildPath: buildPath,
 		
 		buildfiles: {
 			// customMinifyFile: config.customMinifyFile,
@@ -81,6 +86,14 @@ module.exports = function(grunt) {
 						css: ['filePathsCss']
 					}
 				},
+				//_base.less file paths (have a prefix path relative to this file for @import)
+				lessFilePaths:{
+					prefix: '../../',
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						less: ['filePathsLess']
+					}
+				},
 				//list of files to lint - will be stuffed into jshint grunt task variable(s)
 				jshint:{
 					prefix: publicPathRelativeDot,
@@ -103,18 +116,18 @@ module.exports = function(grunt) {
 				//list of css files to concat - will be stuffed into concat grunt task variable(s)
 				concatCss: {
 					prefix: publicPathRelativeDot,
-					moduleGroup: 'allNoBuild',
+					moduleGroup: 'allNoBuildCss',
 					// fileGroup: 'all',
 					outputFiles: {
-						css: ['concat.devCss.src']
+						css: ['concat.devCss.src', 'cssmin.dev.src']
 					}
 				},
 				//list of files to uglify - will be stuffed into uglify grunt task variable(s)
 				uglify:{
 					prefix: publicPathRelativeDot,
-					moduleGroup: 'minified',
+					moduleGroup: 'nonMinified',
 					// fileGroup: 'custom',
-					// uglify: true,
+					uglify: true,
 					outputFiles: {
 						js: ['uglify.build.files']
 					}
@@ -148,6 +161,11 @@ module.exports = function(grunt) {
 					ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}],		//pass in options via command line with `--if=yes --if2=maybe`
 					src: publicPathRelative+"index-if-grunt.html",
 					dest: publicPathRelative+"index-if.html"		//can also just over-write to `index.html` here. But note that if BOTH `--type=prod` AND `--if=yes` are set, that this will OVERWRITE the index-prod-grunt writing above!
+				},
+				//generate _base.less file (with dynamically generated @import tags for resources)
+				baseLess: {
+					src: publicPathRelative+"common/less/_base-grunt.less",
+					dest: publicPathRelative+"common/less/_base.less"
 				}
 			}
 		},
@@ -196,6 +214,21 @@ module.exports = function(grunt) {
 				src: [],		// will be filled via buildfiles task
 				dest: publicPathRelativeDot+paths.templatesJs
 			}
+		},
+		less: {
+			dev: {
+				options: {
+				},
+				files: {
+					"<%= buildPath %>/temp/base.css": "<%= publicPathRelative %>common/less/_base.less"
+				}
+			}
+		},
+		cssmin: {
+			dev: {
+				src: [],		// will be filled via buildfiles task
+				dest: publicPathRelativeDot+paths.minCss
+			}
 		}
 	});
 
@@ -204,12 +237,15 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-angular-templates');
+	grunt.loadNpmTasks('grunt-contrib-less');
+	grunt.loadNpmTasks('grunt-contrib-cssmin');
 	
 	//grunt.loadNpmTasks('grunt-buildfiles');
 	grunt.loadTasks('tasks');
 
 	// Default task(s).
-	grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'concat:devJs', 'concat:devCss']);
+	// grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'concat:devCss']);
+	grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'cssmin:dev']);
 	
 	grunt.registerTask('build', ['buildfiles']);
 	

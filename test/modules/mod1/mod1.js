@@ -1,1 +1,1 @@
-var div1 ='yes';
+var mod1 ='yes';

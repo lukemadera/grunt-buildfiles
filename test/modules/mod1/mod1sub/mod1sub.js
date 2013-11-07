@@ -1,1 +1,1 @@
-var div1sub ='yes';
+var mod1sub ='yes';

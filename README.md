@@ -1,15 +1,24 @@
 # grunt-buildfiles
-Build and set javascript, css, and html assets dynamically for other grunts tasks (i.e. jshint, concat, uglify) and to build index.html and other grunt template files.
+Build and set javascript, css, less, and html assets dynamically for other grunts tasks (i.e. jshint, concat, uglify) and to build index.html and other grunt template files.
 
 This plugin basically does 2 things:
-1. replace glob file path definitions for grunt tasks with explicitly defined lists of files based on ONE config file. So if you want to exclude one or more files from a grunt task, rather than having to list out all the ones you want to include in the Gruntfile, you can list them once (by directory) in buildfilesList.js and then use them in as many grunt tasks as you like. This keeps your Gruntfile DRY (Don't Repeat Yourself) and keeps ONE source of truth for all your assets for easier maintenance. Basically buildfilesList.js controls your assets for your entire app/frontend.
+1. replace glob file path definitions for grunt tasks with explicitly defined lists of files based on ONE config file. So if you want to exclude one or more files from a grunt task, rather than having to list out all the ones you want to include in the Gruntfile, you can list them once (by directory) in buildfilesModules.json and then use them in as many grunt tasks as you like. This keeps your Gruntfile DRY (Don't Repeat Yourself) and keeps ONE source of truth for all your assets for easier maintenance. Basically buildfilesModules.json controls your assets for your entire app/frontend.
 2. use grunt templates to generate files based off one config file. Combined with the above, this allows you to leverage ONE config file to build all your resources across all languages (CSS, JS, HTML) without having to hardcode anything outside of this one config file. Basically dynamic path names for referencing all assets, anywhere in your app.
 
-Basically this allows you to define all your resources/dependencies (css, javascript files) ONCE in a javascript file and then use that single file to lint, concat, and minify these assets AND use the grunt template writer to dynamically build files such as an index.html file that generates the appropriate `<link..>` and `<script..>` tags for these assets.
+Basically this allows you to define all your resources/dependencies (css, less, html templates, javascript files) ONCE in a JSON file and then use that single file to lint, concat, and minify these assets AND use the grunt template writer to dynamically build files such as an index.html file that generates the appropriate `<link..>` and `<script..>` tags for these assets.
 
-For more information, see the comments and documentation in the `tasks/buildfiles.js` grunt task file as well as the `Gruntfile.js` and `test/config/buildfilesList.js` files.
+For more information, see the comments and documentation in the `tasks/buildfiles.js` grunt task file as well as the `Gruntfile.js` and `test/config/buildfilesModules.json` and `test/config/buildfilesModuleGroups.json` files.
 
 NOTE: the biggest current weakness is that the uglify task only seems to work with a '<%= fileNameHere %>' key that refers to a path defined on grunt.initConfig(..) so it must be hardcoded into the buildfiles task and is currently "customMinifyFile" so you MUST define this and set it to a (temporary) filename that uglify will minimize the file to. Again, any enlightenment as to how to get around this is welcome - it's likely a (simple) syntax fix that eludes me..
+
+
+## Why / Usage Examples
+- separating out mobile vs desktop code (especially when code is modular and in one repo)
+While you could have completely separate repos for desktop vs mobile code, especially with responsive design and HTML5 apps, there's often a lot of common code so having to duplicate and keep that in sync across multiple repositories can be error prone and a hassle. With this plugin you can pull ALL your code in ONE repo and easily pick out the files you want for a particular build (note this is NOT limited to just mobile vs desktop - you can set infinite file/module groups in buildfilesModuleGroups.json). This makes it easy and automated (i.e. great for use with Continuous Integration) to generate multiple different builds from the SAME code base. It's easy to add or remove modules from one or more builds.
+
+- separating out minified (3rd party) vs non-minified code
+You generally want to lint/jshint, concat, and minify all your javascript into ONE final file and while typically 3rd party files come minified, some don't so then you have to minify those too during the build process. File globbing to target the appropriate files to minify/not minify can get messy. This plugin allows explicitly stating and grouping any sets of files.
+
 
 ## Getting Started
 This plugin requires Grunt `~0.4.0`
@@ -34,8 +43,6 @@ There's 3 steps for you to do to use this plugin:
 
 ## Documentation
 ### buildfilesModules.json
-@param {String} [baseLessPath] The path to the _base.less file that all other .less files will be @import'ed into (if the file does not exist, it will be created. If it exists, it will be appended to at the bottom of the file).
-
 @param {Array} dirs The directories to include. These can be infinitely nested. Each `dirs` is an object with the following keys:
 	@param {String} name The name / identifier for this object/item/directory
 	
@@ -88,6 +95,8 @@ There's 3 steps for you to do to use this plugin:
 				css: ['filePathsCss']
 			}
 			
+	@param {Boolean} [uglify] Special case - set this flag to set customMinifyFile to the files		//@todo - make this dynamic rather than hardcoded..
+			
 @param {Object} files Files to write/template with grunt.file.write. Define a new key for each file to write, key item is and object of:
 	@param {String} src The grunt template file to use to build/write the final file
 		@example
@@ -104,6 +113,7 @@ There's 3 steps for you to do to use this plugin:
 			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
 
 
+			
 ## Buildfiles task
 
 ### Usage Examples
@@ -112,6 +122,7 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 ```js
 	//@todo - re-copy Gruntfile.js when done
 ```
+
 
 ## Development (see https://npmjs.org/doc/developers.html for notes on publishing npm modules in general)
 - run grunt to ensure no issues
@@ -122,5 +133,8 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 - push to github (to update there as well)
 
 
+
 ## TODO
 - figure out how to make uglify files key be dynamic rather than hardcoded.. (currently "customMinifyFile" must be properly defined in grunt.initConfig(..) for this plugin to work..)
+- support SCSS/SASS in addition to LESS?
+- auto JSON lint and more gracefully error handle bad .json files for buildfilesModules.json and buildfilesModuleGroups.json?

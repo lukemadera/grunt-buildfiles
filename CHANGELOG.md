@@ -1,3 +1,16 @@
+## 0.3.0
+### Breaking changes
+- Complete refactor:
+	- switch to modules instead of separating by HTML, JS, & CSS.
+		- `buildfilesList.js` removed and REPLACED by `buildfilesModules.json` and `buildfilesModuleGroups.json`
+			- much more flexible - you can now define infinite 'module groups' of files you want (thus enabling infinite 'builds' of your code) via buildfilesModuleGroups.json - just define ALL your modules in buildfilesModules.json and then select the ones you want per each build in buildfilesModuleGroups.json.
+			- the Gruntfile.js `configPaths` parameter in the `buildfiles` task now takes a `moduleGroup` name for what files to use.
+	- see README for more info and new usage.
+	
+## Features
+- support LESS so you can now grunt-template build your _base.less file with @import for all the less files and use this to generate your final (minified) CSS
+
+	
 ## v0.2.21
 ### Breaking changes
 - changed `ifOpt` to `ifOpts` so can now pass in multiple options. Multiple options are checked as an `and` so ALL options must match for the condition to be true.
