@@ -66,7 +66,7 @@ module.exports = function(grunt) {
 			buildfilesModules: buildfilesModules,		//define where your list of files/directories are for all your build assets
 			buildfilesModuleGroups: buildfilesModuleGroups,
 			
-			//this takes your buildfiles modules and moduleGroups of all js, css, and html files and generates full paths to all these build assets then stuffs them into other grunt task file paths.
+			//this takes your buildfiles modules and moduleGroups of all js, css, less, and html files and generates full paths to all these build assets then stuffs them into other grunt task file paths.
 			configPaths: {
 				//generic file lists for use elsewhere
 				noPrefix: {
