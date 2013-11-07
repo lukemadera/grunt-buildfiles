@@ -74,6 +74,14 @@
 			}
 		},
 		{
+			"name":"libExt4",
+			"path":"",
+			"comment": "Support blank paths if want to put directory name in files array",
+			"files": {
+				"js":["lib/ext4/extFile4.js"]
+			}
+		},
+		{
 			"name":"badName",
 			"path":"badPath",
 			"active":0,

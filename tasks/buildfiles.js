@@ -152,7 +152,7 @@ module.exports = function(grunt) {
 					path =ret1.moduleObj.name;
 				}
 				//add slash to beginning IF there's already a path there (don't want a leading '/')
-				if(ret.path.length >0) {
+				if(ret.path.length >0 && ret.path[ret.path.length] !=='/') {		//only add if not already ending in a slash (to handle blank directories for nesting)
 					ret.path +='/'+path;
 				}
 				else {
@@ -256,7 +256,7 @@ module.exports = function(grunt) {
 				}
 				
 				//append 'path' (or 'name' if 'path' doesn't exist)
-				if(pathRoot.length >0) {
+				if(pathRoot.length >0 && pathRoot[pathRoot.length] !=='/') {		//only add if not already ending in a slash (to handle blank directories for nesting)
 					fullPath =pathRoot +'/';
 				}
 				if(moduleStartObj.path !==undefined) {

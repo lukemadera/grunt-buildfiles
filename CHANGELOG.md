@@ -1,3 +1,7 @@
+## 0.3.1
+## Features
+- Support blank `path` values if want to put the directory as part of the file name
+
 ## 0.3.0
 ### Breaking changes
 - Complete refactor:
