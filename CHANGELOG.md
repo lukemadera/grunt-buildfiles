@@ -1,3 +1,8 @@
+## 0.3.3
+##Features
+- support ANY file type (no longer just limited to html, css, less, js)
+
+
 ## 0.3.2
 ## Bug Fixes
 - Actually support blank `path` values if want to put the directory as part of the file name (last fix did not actually work fully, was another case)

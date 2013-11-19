@@ -49,6 +49,7 @@ module.exports = function(grunt) {
 		filePathsLess: '',
 		filePathsJsNoPrefix:        '',		//will be filled/created in buildfiles task
 		filePathsCssNoPrefix:        '',		//will be filled/created in buildfiles task
+		filePathsJsTestNoPrefix: '',
 		filePathConcatJs: cfgJson.serverPath+paths.concatJs,
 		filePathConcatCss: cfgJson.serverPath+paths.concatCss,
 		filePathMinJs: cfgJson.serverPath+paths.minJs,
@@ -74,7 +75,8 @@ module.exports = function(grunt) {
 					moduleGroup: 'allNoBuild',
 					outputFiles: {
 						js: ['filePathsJsNoPrefix'],
-						css: ['filePathsCssNoPrefix']
+						css: ['filePathsCssNoPrefix'],
+						test: ['filePathsJsTestNoPrefix']
 					}
 				},
 				//index.html file paths (have the static path prefix for use in <link rel="stylesheet" > and <script> tags)

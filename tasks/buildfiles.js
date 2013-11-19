@@ -40,13 +40,14 @@ module.exports = function(grunt) {
 
 		
 		/**
-		@property filePaths Will hold all the final files (joining the directory with the file name) by type. Each type (html, css, less, js) is an array of file paths.
-		@type Object Each key is a module group name and each module group has a key per file type (html, css, less, js) and each of those is an array of (full) file paths. So for EACH key:
+		@property filePaths Will hold all the final files (joining the directory with the file name) by type. Each type (including but NOT limited to: html, css, less, js) is an array of file paths.
+		@type Object Each key is a module group name and each module group has a key per file type (i.e. html, css, less, js) and each of those is an array of (full) file paths. So for EACH key:
 			@param {Object}
 				@param {Array} js
 				@param {Array} html
 				@param {Array} css
 				@param {Array} less
+				@param {Array} [type5..]
 		*/
 		var filePaths ={};
 		
@@ -206,7 +207,7 @@ module.exports = function(grunt) {
 		}
 		
 		/**
-		Recursive function - goes through the current 'dir' module object and any sub-directories/modules as well and adds the files to the filePaths object by the appropriate type (js, html, css, less) IF it should be (i.e. it's 'active', isn't part of a skip module)
+		Recursive function - goes through the current 'dir' module object and any sub-directories/modules as well and adds the files to the filePaths object by the appropriate type (i.e. js, html, css, less) IF it should be (i.e. it's 'active', isn't part of a skip module)
 		@toc 2.2.
 		@method addFiles
 		@param {Object} moduleStartObj The (sub)module to start adding files from
@@ -248,10 +249,11 @@ module.exports = function(grunt) {
 				//create / seed filePaths for this module group name if it doesn't already exist
 				if(filePaths[moduleGroupName] ===undefined) {
 					filePaths[moduleGroupName] ={
-						js: [],
-						html: [],
-						css: [],
-						less: []
+						//support ANY file type now - keys will be created dynamically as needed
+						// js: [],
+						// html: [],
+						// css: [],
+						// less: []
 					};
 				}
 				
@@ -277,6 +279,9 @@ module.exports = function(grunt) {
 				if(moduleStartObj.files !==undefined) {
 					for(ff in moduleStartObj.files) {
 						for(ii =0; ii<moduleStartObj.files[ff].length; ii++) {
+							if(filePaths[moduleGroupName][ff] ===undefined) {
+								filePaths[moduleGroupName][ff] =[];
+							}
 							filePaths[moduleGroupName][ff].push(fullPath+'/'+moduleStartObj.files[ff][ii]);		//need slash before file
 						}
 						// filePaths[moduleGroupName][ff] =filePaths[moduleGroupName][ff].concat(moduleStartObj.files[ff]);		//need to add fullPath prefix to each
@@ -365,7 +370,7 @@ module.exports = function(grunt) {
 					prefix: cfgJson.staticPath
 				@example
 					prefix: 'app/src'
-			@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to.
+			@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less', etc.) for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to.
 				@example
 					outputFiles: {
 						js: ['filePathsJs'],

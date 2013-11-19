@@ -112,7 +112,8 @@
 					"files": {
 						"js":["mod1.js"],
 						"html":["mod1.html"],
-						"css":["mod1.css"]
+						"css":["mod1.css"],
+						"test":["mod1.spec.js"]
 					},
 					"dirs":[
 						{
@@ -120,7 +121,8 @@
 							"files": {
 								"js":["mod1sub.js"],
 								"html":["mod1sub.html"],
-								"less":["mod1sub.less"]
+								"less":["mod1sub.less"],
+								"test":["mod1sub.spec.js"]
 							}
 						}
 					]
@@ -131,7 +133,8 @@
 					"files": {
 						"js":["mod3.js"],
 						"html":["mod3.html"],
-						"less":["mod3.less"]
+						"less":["mod3.less"],
+						"test":["mod3.spec.js"]
 					}
 				},
 				{
@@ -139,7 +142,8 @@
 					"files": {
 						"js":["mod2.js"],
 						"html":["mod2.html"],
-						"less":["mod2.less"]
+						"less":["mod2.less"],
+						"test":["mod2.spec.js"]
 					}
 				}
 			]
