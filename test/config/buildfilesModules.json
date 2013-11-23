@@ -24,7 +24,7 @@
 					"name":"less",
 					"comment": "'path' key is not required - it will default to the 'name' field if omitted",
 					"files": {
-						"less": ["layout.less"]
+						"less": ["layout.less", "file2.less"]
 					}
 				},
 				{
