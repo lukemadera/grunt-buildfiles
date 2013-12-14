@@ -1,3 +1,8 @@
+## 0.3.4
+## Features
+- concat / join `configPaths` `outputFiles` if the SAME across different `configPaths` keys (previously it just was an overwrite)
+	- add grunt-contrib-watch (and grunt-focus) for example usage
+
 ## 0.3.3
 ##Features
 - support ANY file type (no longer just limited to html, css, less, js)

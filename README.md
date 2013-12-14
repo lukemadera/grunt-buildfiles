@@ -88,7 +88,7 @@ There's 3 steps for you to do to use this plugin:
 		@example
 			prefix: 'app/src'
 	
-	@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to.
+	@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to. NOTE: you CAN specify the SAME output destination across multiple configPaths / outputFiles and they'll all be joined (concatenated) together. Just make sure the prefixes match appropriately!
 		@example
 			outputFiles: {
 				js: ['filePathsJs'],
@@ -120,7 +120,124 @@ There's 3 steps for you to do to use this plugin:
 
 Example of JUST the buildfiles task config - NOTE this plugin depends on and works with other plugins and configs so this is INCOMPLETE - see the "test" directory for a full example of all necessary files and configurations.
 ```js
-	//@todo - re-copy Gruntfile.js when done
+		buildfiles: {
+			// customMinifyFile: config.customMinifyFile,
+			buildfilesModules: buildfilesModules,		//define where your list of files/directories are for all your build assets
+			buildfilesModuleGroups: buildfilesModuleGroups,
+			
+			//this takes your buildfiles modules and moduleGroups of all js, css, less, and html files and generates full paths to all these build assets then stuffs them into other grunt task file paths.
+			configPaths: {
+				// NOTE: we'll use 'watch.build.files' in MULTIPLE places here and they'll all be joined (concatenated) together
+				//generic file lists for use elsewhere
+				noPrefix: {
+					// prefix: '',
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						js: ['filePathsJsNoPrefix'],
+						css: ['filePathsCssNoPrefix'],
+						test: ['filePathsJsTestNoPrefix']
+					}
+				},
+				//index.html file paths (have the static path prefix for use in <link rel="stylesheet" > and <script> tags)
+				indexFilePaths:{
+					prefix: cfgJson.staticPath,
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						js: ['filePathsJs'],
+						css: ['filePathsCss']
+					}
+				},
+				//_base.less file paths (have a prefix path relative to this file for @import)
+				lessFilePaths:{
+					prefix: '../../',
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						less: ['filePathsLess']
+					}
+				},
+				//for watch task - need a prefix
+				lessFilePathsPrefix:{
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						less: ['watch.build.files']
+					}
+				},
+				//list of files to lint - will be stuffed into jshint grunt task variable(s)
+				jshint:{
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'nonMinified',
+					// fileGroup: 'custom',
+					outputFiles: {
+						js: ['jshint.beforeconcat', 'watch.build.files']
+					}
+				},
+				//list of js files to concatenate together - will be stuffed into concat grunt task variable(s)
+				concatJsMin: {
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'allMinified',
+					// fileGroup: 'ext',
+					// additionalFiles: [config.customMinifyFile],
+					outputFiles: {
+						js: ['concat.devJs.src']
+					}
+				},
+				//list of css files to concat - will be stuffed into concat grunt task variable(s)
+				concatCss: {
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'allNoBuildCss',
+					// fileGroup: 'all',
+					outputFiles: {
+						css: ['concat.devCss.src', 'cssmin.dev.src']
+					}
+				},
+				//list of files to uglify - will be stuffed into uglify grunt task variable(s)
+				uglify:{
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'nonMinified',
+					// fileGroup: 'custom',
+					uglify: true,
+					outputFiles: {
+						js: ['uglify.build.files']
+					}
+				},
+				//list of html templates to join together to stuff in AngularJS $templateCache - will be stuffed into ngtemplates grunt task variable(s)
+				templates: {
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						html: ['ngtemplates.main.src', 'watch.build.files']
+					}
+				}
+			},
+			
+			//this will use `grunt.file.write` and a template file to generate a final file (dynamically inserting path names and other config parameters appropriately). NOTE: YOU must write the grunt template files that will be used to generate the files.
+			files: {
+				//generate development version of index.html (with dynamically generated <link rel="stylesheet" > and <script> tags for resources)
+				indexHtml: {
+					src: publicPathRelative+"index-grunt.html",
+					dest: publicPathRelative+"index.html"
+				},
+				//NOTE: the below all will OVERWRITE index.html (IF itOpts are set appropriately) so these must be AFTER the above. The LAST listed one will take precedence if it's ifOpts are set and will overwrite ALL other `index.html` files that were previously written.
+				//generate production version of index.html (with just the minified and concatenated versions of css and js)
+				indexHtmlProd: {
+					ifOpts: [{key:'type', val:'prod'}],		//pass in options via command line with `--type=prod`
+					src: publicPathRelative+"index-prod-grunt.html",
+					dest: publicPathRelative+"index.html"
+				},
+				//with multiple ifOpts to conditionally write a file - ALL must match for the file to be written
+				indexHtmlIf: {
+					ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}],		//pass in options via command line with `--if=yes --if2=maybe`
+					src: publicPathRelative+"index-if-grunt.html",
+					dest: publicPathRelative+"index-if.html"		//can also just over-write to `index.html` here. But note that if BOTH `--type=prod` AND `--if=yes` are set, that this will OVERWRITE the index-prod-grunt writing above!
+				},
+				//generate _base.less file (with dynamically generated @import tags for resources)
+				baseLess: {
+					src: publicPathRelative+"common/less/_base-grunt.less",
+					dest: publicPathRelative+"common/less/_base.less"
+				}
+			}
+		},
 ```
 
 
@@ -136,5 +253,4 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 
 ## TODO
 - figure out how to make uglify files key be dynamic rather than hardcoded.. (currently "customMinifyFile" must be properly defined in grunt.initConfig(..) for this plugin to work..)
-- support SCSS/SASS in addition to LESS?
 - auto JSON lint and more gracefully error handle bad .json files for buildfilesModules.json and buildfilesModuleGroups.json?

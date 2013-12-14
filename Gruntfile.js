@@ -69,6 +69,7 @@ module.exports = function(grunt) {
 			
 			//this takes your buildfiles modules and moduleGroups of all js, css, less, and html files and generates full paths to all these build assets then stuffs them into other grunt task file paths.
 			configPaths: {
+				// NOTE: we'll use 'watch.build.files' in MULTIPLE places here and they'll all be joined (concatenated) together
 				//generic file lists for use elsewhere
 				noPrefix: {
 					// prefix: '',
@@ -96,13 +97,21 @@ module.exports = function(grunt) {
 						less: ['filePathsLess']
 					}
 				},
+				//for watch task - need a prefix
+				lessFilePathsPrefix:{
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						less: ['watch.build.files']
+					}
+				},
 				//list of files to lint - will be stuffed into jshint grunt task variable(s)
 				jshint:{
 					prefix: publicPathRelativeDot,
 					moduleGroup: 'nonMinified',
 					// fileGroup: 'custom',
 					outputFiles: {
-						js: ['jshint.beforeconcat']
+						js: ['jshint.beforeconcat', 'watch.build.files']
 					}
 				},
 				//list of js files to concatenate together - will be stuffed into concat grunt task variable(s)
@@ -139,7 +148,7 @@ module.exports = function(grunt) {
 					prefix: publicPathRelativeDot,
 					moduleGroup: 'allNoBuild',
 					outputFiles: {
-						html: ['ngtemplates.main.src']
+						html: ['ngtemplates.main.src', 'watch.build.files']
 					}
 				}
 			},
@@ -231,6 +240,17 @@ module.exports = function(grunt) {
 				src: [],		// will be filled via buildfiles task
 				dest: publicPathRelativeDot+paths.minCss
 			}
+		},
+		focus: {
+			build: {
+				include: ['build']
+			}
+		},
+		watch: {
+			build: {
+				files: [],		//will be filled by grunt-buildfiles
+				tasks: ['q']
+			}
 		}
 	});
 
@@ -241,6 +261,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-angular-templates');
 	grunt.loadNpmTasks('grunt-contrib-less');
 	grunt.loadNpmTasks('grunt-contrib-cssmin');
+	grunt.loadNpmTasks('grunt-focus');
+	grunt.loadNpmTasks('grunt-contrib-watch');
 	
 	//grunt.loadNpmTasks('grunt-buildfiles');
 	grunt.loadTasks('tasks');
@@ -248,6 +270,11 @@ module.exports = function(grunt) {
 	// Default task(s).
 	// grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'concat:devCss']);
 	grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'cssmin:dev']);
+	
+	grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'less:dev', 'jshint:beforeconcat']);
+	
+	//NOTE: must run buildfiles first since that GENERATES the watch/focus task files!
+	grunt.registerTask('dev-build', ['buildfiles', 'focus:build']);
 	
 	grunt.registerTask('build', ['buildfiles']);
 	

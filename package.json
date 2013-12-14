@@ -1,7 +1,7 @@
 {
   "name": "grunt-buildfiles",
   "description": "Build and set javascript, css, html, and less assets dynamically for other grunts tasks (jshint, concat, uglify) and to build index.html and other grunt template files",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "homepage": "https://github.com/lukemadera/grunt-buildfiles",
   "author": {
     "name": "Luke Madera",
@@ -36,7 +36,9 @@
 		"grunt-contrib-jshint": "~0.7.0",
 		"grunt-angular-templates": "~0.3.6",
 		"grunt-contrib-less": "~0.8.1",
-		"grunt-contrib-cssmin": "~0.7.0"
+		"grunt-contrib-cssmin": "~0.7.0",
+		"grunt-contrib-watch":"~0.5.3",
+		"grunt-focus": "~0.1.1"
   },
   "peerDependencies": {
     "grunt": "~0.4.1"
