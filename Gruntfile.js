@@ -267,10 +267,7 @@ module.exports = function(grunt) {
 	//grunt.loadNpmTasks('grunt-buildfiles');
 	grunt.loadTasks('tasks');
 
-	// Default task(s).
-	// grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'concat:devCss']);
-	grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'cssmin:dev']);
-	
+	//tasks
 	grunt.registerTask('q', ['buildfiles', 'ngtemplates:main', 'less:dev', 'jshint:beforeconcat']);
 	
 	//NOTE: must run buildfiles first since that GENERATES the watch/focus task files!
@@ -279,4 +276,7 @@ module.exports = function(grunt) {
 	grunt.registerTask('build', ['buildfiles']);
 	
 	grunt.registerTask('dev', ['jshint:dev']);
+	
+	// grunt.registerTask('default', ['buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'concat:devCss']);
+	grunt.registerTask('default', ['dev', 'buildfiles', 'ngtemplates:main', 'jshint:beforeconcat', 'uglify:build', 'less:dev', 'concat:devJs', 'cssmin:dev']);
 };

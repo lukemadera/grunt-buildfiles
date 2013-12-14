@@ -242,7 +242,7 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 
 
 ## Development (see https://npmjs.org/doc/developers.html for notes on publishing npm modules in general)
-- run grunt to ensure no issues
+- run `grunt` to ensure no issues
 - bump version number in package.json
 - update CHANGELOG (and potentially this README) file
 - git commit changes
