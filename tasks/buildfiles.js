@@ -24,6 +24,7 @@ Can handle separating external (already minified) files from the rest to avoid a
 	2.2. addFiles
 3. setConfigPaths
 4. writeTemplateFiles
+5. checkIfOpts
 
 @todo - figure out how to make uglify files key be dynamic rather than hardcoded..
 */
@@ -381,53 +382,69 @@ module.exports = function(grunt) {
 		function setConfigPaths(params) {
 			if(conf.configPaths !==undefined) {
 				// var msg ='';		//TESTING
-				var config, prefix, fileType, moduleGroup, prefixedFilePaths;
+				//will output which files are skiped and which are written
+				var writeFiles ={
+					skip: [],
+					// write: []
+				};
+			
+				var config, prefix, fileType, moduleGroup, prefixedFilePaths, goTrig;
 				// used to store files paths PER key - this will support concatenating files together for the SAME key (rather than just over-writing)
 				var outputKeyVals ={};
 				var curKey;
 				for(config in conf.configPaths) {		//iterate through each config path
-					prefix =conf.configPaths[config].prefix || '';		//default to no prefix
-					moduleGroup =conf.configPaths[config].moduleGroup || 'all';		//default to all (both custom and ext files)
-					// console.log('config: '+config+' prefix: '+prefix+' moduleGroup: '+moduleGroup);
+					goTrig =true;
+					if(conf.configPaths[config].ifOpts !==undefined) {
+						goTrig =checkIfOpts(conf.configPaths[config].ifOpts, {});
+						if(!goTrig) {
+							writeFiles.skip.push('key: '+config);
+						}
+					}
 					
-					for(fileType in conf.configPaths[config].outputFiles) {		//iterate through each file type
-						if(filePaths[moduleGroup] !==undefined && filePaths[moduleGroup][fileType] !==undefined) {
-							//form new file paths array with prefix prepended
-							prefixedFilePaths =[];
-							for(ii =0; ii<filePaths[moduleGroup][fileType].length; ii++) {
-								prefixedFilePaths[ii] =prefix+filePaths[moduleGroup][fileType][ii];
-							}
+					if(goTrig) {
+						prefix =conf.configPaths[config].prefix || '';		//default to no prefix
+						moduleGroup =conf.configPaths[config].moduleGroup || 'all';		//default to all (both custom and ext files)
+						// console.log('config: '+config+' prefix: '+prefix+' moduleGroup: '+moduleGroup);
+						
+						for(fileType in conf.configPaths[config].outputFiles) {		//iterate through each file type
+							if(filePaths[moduleGroup] !==undefined && filePaths[moduleGroup][fileType] !==undefined) {
+								//form new file paths array with prefix prepended
+								prefixedFilePaths =[];
+								for(ii =0; ii<filePaths[moduleGroup][fileType].length; ii++) {
+									prefixedFilePaths[ii] =prefix+filePaths[moduleGroup][fileType][ii];
+								}
 
-							//special case for uglify task		//@todo - fix this..
-							if(conf.configPaths[config].uglify !==undefined && conf.configPaths[config].uglify) {
-								prefixedFilePaths ={
-									'<%= customMinifyFile %>': prefixedFilePaths
-								};
-								for(ii=0; ii<conf.configPaths[config].outputFiles[fileType].length; ii++) {
-									grunt.config(conf.configPaths[config].outputFiles[fileType][ii], prefixedFilePaths);
+								//special case for uglify task		//@todo - fix this..
+								if(conf.configPaths[config].uglify !==undefined && conf.configPaths[config].uglify) {
+									prefixedFilePaths ={
+										'<%= customMinifyFile %>': prefixedFilePaths
+									};
+									for(ii=0; ii<conf.configPaths[config].outputFiles[fileType].length; ii++) {
+										grunt.config(conf.configPaths[config].outputFiles[fileType][ii], prefixedFilePaths);
+									}
+								}
+								else {
+								
+									//actually set the grunt.config now that we have the final file paths (with the prefixes prepended)
+									for(ii=0; ii<conf.configPaths[config].outputFiles[fileType].length; ii++) {
+										curKey =conf.configPaths[config].outputFiles[fileType][ii];
+										if(outputKeyVals[curKey] !==undefined) {
+											outputKeyVals[curKey] =outputKeyVals[curKey].concat(prefixedFilePaths);
+										}
+										else {
+											outputKeyVals[curKey] =prefixedFilePaths;
+										}
+										/*
+										//now supporting concat / joining across multiple configs if the SAME key
+										// msg +=conf.configPaths[config].outputFiles[fileType][ii]+' '+prefixedFilePaths+'\n';		//TESTING
+										grunt.config(conf.configPaths[config].outputFiles[fileType][ii], prefixedFilePaths);
+										*/
+									}
 								}
 							}
 							else {
-							
-								//actually set the grunt.config now that we have the final file paths (with the prefixes prepended)
-								for(ii=0; ii<conf.configPaths[config].outputFiles[fileType].length; ii++) {
-									curKey =conf.configPaths[config].outputFiles[fileType][ii];
-									if(outputKeyVals[curKey] !==undefined) {
-										outputKeyVals[curKey] =outputKeyVals[curKey].concat(prefixedFilePaths);
-									}
-									else {
-										outputKeyVals[curKey] =prefixedFilePaths;
-									}
-									/*
-									//now supporting concat / joining across multiple configs if the SAME key
-									// msg +=conf.configPaths[config].outputFiles[fileType][ii]+' '+prefixedFilePaths+'\n';		//TESTING
-									grunt.config(conf.configPaths[config].outputFiles[fileType][ii], prefixedFilePaths);
-									*/
-								}
+								grunt.log.writeln('ERROR: undefined: filePaths.'+moduleGroup+' and/or filePaths.'+moduleGroup+'.'+fileType);
 							}
-						}
-						else {
-							grunt.log.writeln('ERROR: undefined: filePaths.'+moduleGroup+' and/or filePaths.'+moduleGroup+'.'+fileType);
 						}
 					}
 				}
@@ -436,6 +453,10 @@ module.exports = function(grunt) {
 				for(curKey in outputKeyVals) {
 					grunt.config(curKey, outputKeyVals[curKey]);
 				}
+				
+				//output message detailing which sections were skipped
+				var msg ='\nbuildfiles forming configPaths:\n';
+				outputWriteFiles(writeFiles, msg, {});
 			}
 		}
 
@@ -456,6 +477,12 @@ module.exports = function(grunt) {
 				//check to see if should write this file at all using 'ifOpts' param which corresponds to command line arguments (i.e. `--if=yes`) which correspond to grunt.option here.
 				var goTrig =true;
 				if(conf.files[ff].ifOpts !==undefined) {
+					goTrig =checkIfOpts(conf.files[ff].ifOpts, {});
+					if(!goTrig) {
+						writeFiles.skip.push('src: '+conf.files[ff].src);
+						// grunt.log.writeln('buildfiles SKIP file due to ifOpts: src: '+conf.files[ff].src);
+					}
+					/*
 					//go through ALL ifOpts and find at least ONE that either is undefined or does not match, then set goTrig to false
 					for(ii =0; ii<conf.files[ff].ifOpts.length; ii++) {
 						if(grunt.option(conf.files[ff].ifOpts[ii].key) ===undefined || grunt.option(conf.files[ff].ifOpts[ii].key) != conf.files[ff].ifOpts[ii].val) {
@@ -465,6 +492,7 @@ module.exports = function(grunt) {
 							break;
 						}
 					}
+					*/
 				}
 				
 				if(goTrig) {
@@ -477,22 +505,55 @@ module.exports = function(grunt) {
 					writeFiles.write.push(dest+' src: '+src);
 				}
 			}
+			
 			//output message detailing which files were written and which were skipped
 			var msg ='\nbuildfiles writing files (if multiple files go to the same destination, the LAST one is the src that will have been used):\n';
-			if(writeFiles.skip.length >0) {
+			outputWriteFiles(writeFiles, msg, {});
+		}
+		
+		
+		/**
+		@toc 5.
+		@method checkIfOpts
+		@param {Array} ifOpts
+		@param {Object} params
+		@return {Boolean} True if satisfies ALL ifOpts conditions
+		*/
+		function checkIfOpts(ifOpts, params) {
+			var ii;
+			var goTrig =true;
+			//go through ALL ifOpts and find at least ONE that either is undefined or does not match, then set goTrig to false
+			for(ii =0; ii<ifOpts.length; ii++) {
+				if(grunt.option(ifOpts[ii].key) ===undefined || grunt.option(ifOpts[ii].key) != ifOpts[ii].val) {
+					goTrig =false;
+					break;
+				}
+			}
+			return goTrig;
+		}
+		
+		
+		/**
+		@toc 6.
+		@method outputWriteFiles
+		*/
+		function outputWriteFiles(writeFiles, msg, params) {
+			if(msg ===undefined || !msg) {
+				msg ='\n';
+			}
+			if(writeFiles.skip !==undefined && writeFiles.skip.length >0) {
 				msg +='SKIPPED files (due to ifOpts):\n';
 				for(ii =0; ii<writeFiles.skip.length; ii++) {
 					msg+=(ii+1)+'. '+writeFiles.skip[ii]+'\n';
 				}
 			}
-			if(writeFiles.write.length >0) {
+			if(writeFiles.write !==undefined && writeFiles.write.length >0) {
 				msg +='WRITTEN files:\n';
 				for(ii =0; ii<writeFiles.write.length; ii++) {
 					msg+=(ii+1)+'. '+writeFiles.write[ii]+'\n';
 				}
 			}
 			grunt.log.writeln(msg);
-		
 		}
 		
 		

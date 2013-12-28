@@ -110,6 +110,14 @@ There's 3 steps for you to do to use this plugin:
 			}
 			
 	@param {Boolean} [uglify] Special case - set this flag to set customMinifyFile to the files		//@todo - make this dynamic rather than hardcoded..
+	
+	@param {Array} [ifOpts] Conditional rules that tell when to set config paths based on command line options. Path will be set/concatenated only if ALL command line options are set and match the values for that key.
+	
+		@example
+			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
+			
+		@example
+			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
 			
 @param {Object} files Files to write/template with grunt.file.write. Define a new key for each file to write, key item is and object of:
 

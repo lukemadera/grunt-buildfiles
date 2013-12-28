@@ -61,6 +61,7 @@ module.exports = function(grunt) {
 		publicPathRelative: publicPathRelative,
 		publicPathRelativeDot: publicPathRelativeDot,
 		buildPath: buildPath,
+		dummyVar: '',
 		
 		buildfiles: {
 			// customMinifyFile: config.customMinifyFile,
@@ -149,6 +150,14 @@ module.exports = function(grunt) {
 					moduleGroup: 'allNoBuild',
 					outputFiles: {
 						html: ['ngtemplates.main.src', 'watch.build.files']
+					}
+				},
+				ifOptsTest: {
+					ifOpts: [{key:'type', val:'if'}],		//pass in options via command line with `--type=if`
+					prefix: publicPathRelativeDot,
+					moduleGroup: 'allNoBuild',
+					outputFiles: {
+						html: ['dummyVar']
 					}
 				}
 			},

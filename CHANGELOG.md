@@ -1,3 +1,8 @@
+## 0.3.5
+## Features
+- add `ifOpts` to `configPaths` so can conditionally set paths (this is useful since can no longer overwrite paths with later ones due to 0.3.4 concat feature)
+
+
 ## 0.3.4
 ## Features
 - concat / join `configPaths` `outputFiles` if the SAME across different `configPaths` keys (previously it just was an overwrite)
