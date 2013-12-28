@@ -2,7 +2,9 @@
 Build and set javascript, css, less, and html assets dynamically for other grunts tasks (i.e. jshint, concat, uglify) and to build index.html and other grunt template files.
 
 This plugin basically does 2 things:
+
 1. replace glob file path definitions for grunt tasks with explicitly defined lists of files based on ONE config file. So if you want to exclude one or more files from a grunt task, rather than having to list out all the ones you want to include in the Gruntfile, you can list them once (by directory) in buildfilesModules.json and then use them in as many grunt tasks as you like. This keeps your Gruntfile DRY (Don't Repeat Yourself) and keeps ONE source of truth for all your assets for easier maintenance. Basically buildfilesModules.json controls your assets for your entire app/frontend.
+
 2. use grunt templates to generate files based off one config file. Combined with the above, this allows you to leverage ONE config file to build all your resources across all languages (CSS, JS, HTML) without having to hardcode anything outside of this one config file. Basically dynamic path names for referencing all assets, anywhere in your app.
 
 Basically this allows you to define all your resources/dependencies (css, less, html templates, javascript files) ONCE in a JSON file and then use that single file to lint, concat, and minify these assets AND use the grunt template writer to dynamically build files such as an index.html file that generates the appropriate `<link..>` and `<script..>` tags for these assets.
@@ -42,8 +44,11 @@ There's 3 steps for you to do to use this plugin:
 
 
 ## Documentation
+
 ### buildfilesModules.json
+
 @param {Array} dirs The directories to include. These can be infinitely nested. Each `dirs` is an object with the following keys:
+
 	@param {String} name The name / identifier for this object/item/directory
 	
 	@param {String} [path] File path for where this directory is. Defaults to the `name` key if omitted
@@ -51,6 +56,7 @@ There's 3 steps for you to do to use this plugin:
 	@param {Array} [dirs] Allows further nesting for sub-directories / files (without having to type out the full paths each time - `path` is chained down through the `dirs`. NOTE: one of `dirs` or `files` must exist.
 	
 	@param {Object} [files] The actual files to add in by file type, available file types below. NOTE: one of `dirs` or `files` must exist.
+	
 		@param {Array} [js] All the javascript files
 		
 		@param {Array} [html] All the html / template files
@@ -64,7 +70,9 @@ There's 3 steps for you to do to use this plugin:
 	@param {String} [comment] Placeholder for any comments (since JSON doesn't allow comments) - will be ignored.
 
 ### buildfilesModuleGroups.json
+
 @param {Object} key Each key is a moduleGroup name, and each of those is:
+
 	@param {Array} modules An array of all modules (from buildfilesModules.json) to include OR `_all` which is a special keyword for ALL modules.
 	
 	@param {Array} [skipModules] An array of modules to NOT include (these will be REMOVED the `modules` array list above)
@@ -73,22 +81,28 @@ There's 3 steps for you to do to use this plugin:
 	
 	
 ### buildfiles Gruntfile.js properties
+
 @param {Object} buildfilesModules The JSON object from the buildfilesModules.json file
 
 @param {Object} buildfilesModuleGroups The JSON object from the buildfilesModuleGroups.json file
 
 @param {Object} configPaths Tells which grunt variables to stuff with the file lists based on the module group used (and optionally a prefix). Define a new key for each file group you want to write; each item is an object of:
+
 	@param {String} moduleGroup The name of the module group that tells which files to use - MUST match a key set in buildfilesModuleGroups.json
+	
 		@example
 			moduleGroup: 'all'
 	
 	@param {String} [prefix] Optional prefix to prepend to EACH file in this file group (i.e. 'app/src/') - this allows differentiating the same file groups for different purposes (i.e. for writing index.html vs adding files to be linted or included in tests - the relative paths may differ so this allows setting it)
+	
 		@example
 			prefix: cfgJson.staticPath
+			
 		@example
 			prefix: 'app/src'
 	
 	@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to. NOTE: you CAN specify the SAME output destination across multiple configPaths / outputFiles and they'll all be joined (concatenated) together. Just make sure the prefixes match appropriately!
+	
 		@example
 			outputFiles: {
 				js: ['filePathsJs'],
@@ -98,17 +112,22 @@ There's 3 steps for you to do to use this plugin:
 	@param {Boolean} [uglify] Special case - set this flag to set customMinifyFile to the files		//@todo - make this dynamic rather than hardcoded..
 			
 @param {Object} files Files to write/template with grunt.file.write. Define a new key for each file to write, key item is and object of:
+
 	@param {String} src The grunt template file to use to build/write the final file
+	
 		@example
 			src: publicPathRelative+"index-grunt.html"
 	
 	@param {String} dest The final file destination
+	
 		@example
 			dest: publicPathRelative+"index.html"
 			
 	@param {Array} [ifOpts] Conditional rules that tell when to write this file based on command line options. File will only be written if ALL command line options are set and match the values for that key.
+	
 		@example
 			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
+			
 		@example
 			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
 
