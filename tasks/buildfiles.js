@@ -14,6 +14,47 @@ Common use cases:
 More specifically, this plugin takes a buildfilesArray javascript array as a config list of all javascript and css (and html) files and uses them to set the lint, concat, uglify files as well as writes grunt template files (including index.html) to include these resources appropriately.  
 Can handle separating external (already minified) files from the rest to avoid any issues with double minification. To use this, set the "dirsExt" key in the buildfilesArray to an array of the directories to NOT uglify/minify.
 
+Grunt config params
+@param {Object} buildfilesModules The JSON object from the buildfilesModules.json file
+
+@param {Object} buildfilesModuleGroups The JSON object from the buildfilesModuleGroups.json file
+
+@param {String} [moduleGroupsSkipPrefix ='__'] A special prefix that is used as the equivalent of "commenting out" lines / modules (since JSON doesn't allow commenting like javascript does) - this is for performance optimization only since any bad module name in `buildfilesModuleGroups.json` will be skipped anyway; this will just stop trying to find it earlier.
+
+@param {Object} configPaths Tells which grunt variables to stuff with the file lists based on the module group used (and optionally a prefix). Define a new key for each file group you want to write; each item is an object of:
+	@param {String} moduleGroup The name of the module group that tells which files to use - MUST match a key set in buildfilesModuleGroups.json
+		@example
+			moduleGroup: 'all'
+	@param {String} [prefix] Optional prefix to prepend to EACH file in this file group (i.e. 'app/src/') - this allows differentiating the same file groups for different purposes (i.e. for writing index.html vs adding files to be linted or included in tests - the relative paths may differ so this allows setting it)
+		@example
+			prefix: cfgJson.staticPath
+		@example
+			prefix: 'app/src'
+	@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to. NOTE: you CAN specify the SAME output destination across multiple configPaths / outputFiles and they'll all be joined (concatenated) together. Just make sure the prefixes match appropriately!
+		@example
+			outputFiles: {
+				js: ['filePathsJs'],
+				css: ['filePathsCss']
+			}
+	@param {Boolean} [uglify] Special case - set this flag to set customMinifyFile to the files		//@todo - make this dynamic rather than hardcoded..
+	@param {Array} [ifOpts] Conditional rules that tell when to set config paths based on command line options. Path will be set/concatenated only if ALL command line options are set and match the values for that key.
+		@example
+			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
+		@example
+			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
+			
+@param {Object} files Files to write/template with grunt.file.write. Define a new key for each file to write, key item is and object of:
+	@param {String} src The grunt template file to use to build/write the final file
+		@example
+			src: publicPathRelative+"index-grunt.html"
+	@param {String} dest The final file destination
+		@example
+			dest: publicPathRelative+"index.html"
+	@param {Array} [ifOpts] Conditional rules that tell when to write this file based on command line options. File will only be written if ALL command line options are set and match the values for that key.
+		@example
+			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
+		@example
+			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
 
 @toc
 1. pull in grunt config
@@ -38,6 +79,7 @@ module.exports = function(grunt) {
 		var conf =grunt.config('buildfiles');
 		var modules =conf.buildfilesModules;
 		var moduleGroups =conf.buildfilesModuleGroups;
+		var moduleGroupsSkipPrefix =conf.moduleGroupsSkipPrefix || '__';		//this only exists for performance optimization; ANY bad module name will be skipped (obviously, since not named properly so don't know where to find it!) but this stops searching a bit earlier
 
 		
 		/**
@@ -80,19 +122,27 @@ module.exports = function(grunt) {
 				if(moduleGroup.modules !==undefined) {
 					//go through modules key for each module name we WANT to include
 					for(ii =0; ii<moduleGroup.modules.length; ii++) {
+						valid =true;
 						if(moduleGroup.modules[ii] =='_all') {		//special reserved word for ALL modules
 							moduleStart =modules;
 						}
 						else {
-							ret1 =parseModuleStartObj(moduleGroup.modules[ii], {});
-							moduleStart =ret1.moduleObj;
-							path =ret1.path;
-							nameDotNotation =ret1.nameDotNotation;
+							//check against skip prefix and only add if NOT a match
+							if(moduleGroup.modules[ii].slice(0, moduleGroupsSkipPrefix.length) ==moduleGroupsSkipPrefix) {
+								valid =false;
+							}
+							else {
+								ret1 =parseModuleStartObj(moduleGroup.modules[ii], {});
+								moduleStart =ret1.moduleObj;
+								path =ret1.path;
+								nameDotNotation =ret1.nameDotNotation;
+							}
 						}
 						
-						//now that have module to start with and parent path (if any), go through it (and ALL sub 'dir' objects, if any) and add the files by file type
-						addFiles(moduleStart, path, nameDotNotation, moduleGroup, key, {});
-						
+						if(valid) {
+							//now that have module to start with and parent path (if any), go through it (and ALL sub 'dir' objects, if any) and add the files by file type
+							addFiles(moduleStart, path, nameDotNotation, moduleGroup, key, {});
+						}
 					}
 				}
 				else {
@@ -144,35 +194,42 @@ module.exports = function(grunt) {
 				var newModuleName =moduleName.slice((indexDot+1), moduleName.length);
 				var moduleNamePart =moduleName.slice(0, indexDot);
 				ret1 =parseNonNestedModule(moduleSearch, moduleNamePart, {});
-				var newModuleSearch =ret1.moduleObj;
 				
-				//get path of current module and append it to end of existing path
-				if(ret1.moduleObj.path !==undefined) {		//path is an optional key so only use if exists
-					path =ret1.moduleObj.path;
+				//error handle - check to ensure an object was found and returned (otherwise (if bad name) can't nest further)
+				if(!ret1.found) {
+					console.log('WARNING: moduleName: '+moduleNamePart+' not found as part of: '+moduleName);
 				}
-				else {		//if no path, use 'name' key instead
-					path =ret1.moduleObj.name;
+				else {		//only continue if have a (non-empty) object
+					var newModuleSearch =ret1.moduleObj;
+					
+					//get path of current module and append it to end of existing path
+					if(ret1.moduleObj.path !==undefined) {		//path is an optional key so only use if exists
+						path =ret1.moduleObj.path;
+					}
+					else {		//if no path, use 'name' key instead
+						path =ret1.moduleObj.name;
+					}
+					//add slash to beginning IF there's already a path there (don't want a leading '/')
+					if(ret.path.length >0) {
+						ret.path +='/'+path;
+					}
+					else {
+						ret.path +=path;
+					}
+					
+					//get name of current module and append it to end of existing nameDotNotation
+					nameDotNotation =ret1.moduleObj.name;
+					
+					//add dot to beginning IF there's already a name there (don't want a leading '.')
+					if(ret.nameDotNotation.length >0) {
+						ret.nameDotNotation +='.'+nameDotNotation;
+					}
+					else {
+						ret.nameDotNotation +=nameDotNotation;
+					}
+					
+					ret =parseModuleStartObj(newModuleName, {moduleSearch: newModuleSearch, path:ret.path, nameDotNotation:ret.nameDotNotation});		//recursive call
 				}
-				//add slash to beginning IF there's already a path there (don't want a leading '/')
-				if(ret.path.length >0) {
-					ret.path +='/'+path;
-				}
-				else {
-					ret.path +=path;
-				}
-				
-				//get name of current module and append it to end of existing nameDotNotation
-				nameDotNotation =ret1.moduleObj.name;
-				
-				//add dot to beginning IF there's already a name there (don't want a leading '.')
-				if(ret.nameDotNotation.length >0) {
-					ret.nameDotNotation +='.'+nameDotNotation;
-				}
-				else {
-					ret.nameDotNotation +=nameDotNotation;
-				}
-				
-				ret =parseModuleStartObj(newModuleName, {moduleSearch: newModuleSearch, path:ret.path, nameDotNotation:ret.nameDotNotation});		//recursive call
 			}
 			else {		//non-nested
 				ret1 =parseNonNestedModule(moduleSearch, moduleName, {});
@@ -191,9 +248,11 @@ module.exports = function(grunt) {
 		@return {Object}
 			@param {Object} moduleObj The module object to start with based on the moduleName input string
 			// @param {String} path
+			@param {Boolean} found True if moduleName was found
 		*/
 		function parseNonNestedModule(moduleSearch, moduleName, params) {
 			var ret ={
+				found: false,
 				moduleObj: {},
 				// path: ''		//path will always be blank for a singly nested search since the path is part of the moduleObj returned
 			};
@@ -201,6 +260,7 @@ module.exports = function(grunt) {
 			for(ii =0; ii<moduleSearch.dirs.length; ii++) {
 				if(moduleSearch.dirs[ii].name ==moduleName) {
 					ret.moduleObj =moduleSearch.dirs[ii];
+					ret.found =true;
 					break;
 				}
 			}
@@ -443,7 +503,7 @@ module.exports = function(grunt) {
 								}
 							}
 							else {
-								grunt.log.writeln('ERROR: undefined: filePaths.'+moduleGroup+' and/or filePaths.'+moduleGroup+'.'+fileType);
+								grunt.log.writeln('WARNING: undefined: filePaths.'+moduleGroup+' and/or filePaths.'+moduleGroup+'.'+fileType);
 							}
 						}
 					}

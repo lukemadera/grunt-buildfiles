@@ -18,5 +18,17 @@
 	"nonMinified": {
 		"modules":["_all"],
 		"skipModules":["build", "buildTemp", "buildTempCss", "lib.ext3", "lib.ext1"]
+	},
+	"skipPrefixTest": {
+		"comment": "Any bad file name will NOT be included but a special 'skipPrefix' (defaults to __) can be used to (properly) 'comment out' lines / modules to include",
+		"modules":[
+			"common.js",
+			"__common.less",
+			"common.html"
+		],
+		"skipModules": [
+			"common.js",
+			"__common.html"
+		]
 	}
 }

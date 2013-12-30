@@ -81,63 +81,7 @@ There's 3 steps for you to do to use this plugin:
 	
 	
 ### buildfiles Gruntfile.js properties
-
-@param {Object} buildfilesModules The JSON object from the buildfilesModules.json file
-
-@param {Object} buildfilesModuleGroups The JSON object from the buildfilesModuleGroups.json file
-
-@param {Object} configPaths Tells which grunt variables to stuff with the file lists based on the module group used (and optionally a prefix). Define a new key for each file group you want to write; each item is an object of:
-
-	@param {String} moduleGroup The name of the module group that tells which files to use - MUST match a key set in buildfilesModuleGroups.json
-	
-		@example
-			moduleGroup: 'all'
-	
-	@param {String} [prefix] Optional prefix to prepend to EACH file in this file group (i.e. 'app/src/') - this allows differentiating the same file groups for different purposes (i.e. for writing index.html vs adding files to be linted or included in tests - the relative paths may differ so this allows setting it)
-	
-		@example
-			prefix: cfgJson.staticPath
-			
-		@example
-			prefix: 'app/src'
-	
-	@param {Object} outputFiles Defines where to stuff the file array list BY FILE TYPE (one or more of 'js', 'html', 'css', 'less') for use in other grunt tasks (i.e. for lint/jshint, concat, uglify/minify, writing to index.html). Each key is an array of grunt (task) properties to write to. NOTE: you CAN specify the SAME output destination across multiple configPaths / outputFiles and they'll all be joined (concatenated) together. Just make sure the prefixes match appropriately!
-	
-		@example
-			outputFiles: {
-				js: ['filePathsJs'],
-				css: ['filePathsCss']
-			}
-			
-	@param {Boolean} [uglify] Special case - set this flag to set customMinifyFile to the files		//@todo - make this dynamic rather than hardcoded..
-	
-	@param {Array} [ifOpts] Conditional rules that tell when to set config paths based on command line options. Path will be set/concatenated only if ALL command line options are set and match the values for that key.
-	
-		@example
-			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
-			
-		@example
-			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
-			
-@param {Object} files Files to write/template with grunt.file.write. Define a new key for each file to write, key item is and object of:
-
-	@param {String} src The grunt template file to use to build/write the final file
-	
-		@example
-			src: publicPathRelative+"index-grunt.html"
-	
-	@param {String} dest The final file destination
-	
-		@example
-			dest: publicPathRelative+"index.html"
-			
-	@param {Array} [ifOpts] Conditional rules that tell when to write this file based on command line options. File will only be written if ALL command line options are set and match the values for that key.
-	
-		@example
-			ifOpts: [{key:'type', val:'prod'}]		//pass in options via command line with `--type=prod`
-			
-		@example
-			ifOpts: [{key:'if', val:'yes'}, {key:'if2', val:'maybe'}]		//pass in options via command line with `--if=yes --if2=maybe`
+See [tasks/buildfiles.js](tasks/buildfiles.js) for grunt.config properties to pass in
 
 
 			

@@ -62,11 +62,18 @@ module.exports = function(grunt) {
 		publicPathRelativeDot: publicPathRelativeDot,
 		buildPath: buildPath,
 		dummyVar: '',
+		// testSkipPrefix: {
+			// html: '',
+			// js: '',
+			// css: ''
+		// },
+		testSkipPrefix: '',
 		
 		buildfiles: {
 			// customMinifyFile: config.customMinifyFile,
 			buildfilesModules: buildfilesModules,		//define where your list of files/directories are for all your build assets
 			buildfilesModuleGroups: buildfilesModuleGroups,
+			// moduleGroupsSkipPrefix: '_-',
 			
 			//this takes your buildfiles modules and moduleGroups of all js, css, less, and html files and generates full paths to all these build assets then stuffs them into other grunt task file paths.
 			configPaths: {
@@ -159,6 +166,14 @@ module.exports = function(grunt) {
 					outputFiles: {
 						html: ['dummyVar']
 					}
+				},
+				moduleGroupSkipPrefixTest: {
+					moduleGroup: 'skipPrefixTest',
+					outputFiles: {
+						js: ['testSkipPrefix'],
+						less: ['testSkipPrefix'],
+						html: ['testSkipPrefix']
+					}
 				}
 			},
 			
@@ -186,6 +201,10 @@ module.exports = function(grunt) {
 				baseLess: {
 					src: publicPathRelative+"common/less/_base-grunt.less",
 					dest: publicPathRelative+"common/less/_base.less"
+				},
+				testSkipPrefix: {
+					src: publicPathRelative+"test-skip-prefix-grunt.txt",
+					dest: publicPathRelative+"test-skip-prefix.txt"
 				}
 			}
 		},

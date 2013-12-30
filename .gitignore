@@ -11,3 +11,4 @@ test/build
 test/index.html
 test/index-prod.html
 test/index-dev.html
+test/test-skip-prefix.txt

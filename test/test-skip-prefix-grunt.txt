@@ -1,0 +1,6 @@
+<%
+var filePaths =grunt.config('testSkipPrefix');
+for(var ii=0; ii<filePaths.length; ii++) {
+	print('\t' + filePaths[ii] + '\n');
+}
+%>

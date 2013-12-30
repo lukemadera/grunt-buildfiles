@@ -1,3 +1,7 @@
+## 0.3.6
+## Features
+- add `moduleGroupsSkipPrefix` (defaults to __) as (proper) way to 'comment out' modules or skipModules in `buildfilesModuleGroups.json` and NOT include them. Also fix error (change to console WARNING) that would result from bad module name.
+
 ## 0.3.5
 ## Features
 - add `ifOpts` to `configPaths` so can conditionally set paths (this is useful since can no longer overwrite paths with later ones due to 0.3.4 concat feature)
