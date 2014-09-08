@@ -559,7 +559,11 @@ module.exports = function(grunt) {
 					var src =conf.files[ff].src;
 					var dest =conf.files[ff].dest;
 					var tmpl = grunt.file.read(src);
-					grunt.file.write(dest, grunt.template.process(tmpl));
+					var tmplOpts ={};
+					if(conf.files[ff].templateData !==undefined) {
+						tmplOpts.data =conf.files[ff].templateData;
+					}
+					grunt.file.write(dest, grunt.template.process(tmpl, tmplOpts));
 					// grunt.log.writeln('buildfiles writing file: src: '+src+' dest: '+dest);
 					// writeFiles.write.push('src: '+src+' dest: '+dest);
 					writeFiles.write.push(dest+' src: '+src);

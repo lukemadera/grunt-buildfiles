@@ -205,6 +205,32 @@ module.exports = function(grunt) {
 				testSkipPrefix: {
 					src: publicPathRelative+"test-skip-prefix-grunt.txt",
 					dest: publicPathRelative+"test-skip-prefix.txt"
+				},
+				//use templateData - this allows using the SAME template file but generating MULTIPLE different output files via different options.data to be passed to grunt.template
+				protractorChrome: {
+					src: publicPathRelative+"config/protractor.conf-grunt.js",
+					dest: publicPathRelative+"config/protractor/protractor.conf.js",
+					templateData: {
+						protractorCaps: {
+							'browser': 'Chrome'
+						}
+					}
+				},
+				protractorWin7FF: {
+					src: publicPathRelative+"config/protractor.conf-grunt.js",
+					dest: publicPathRelative+"config/protractor/protractorWin7FF.conf.js",
+					templateData: {
+						protractorCaps: {
+							'browserstack.user' : '[someuser]',
+							'browserstack.key' : '[somekey]',
+							'browserstack.debug' : 'true',
+							'resolution': '1024x768',
+							'browser': 'Firefox',
+							'browser_version': '27.0',
+							'os': 'Windows',
+							'os_version': '7'
+						}
+					}
 				}
 			}
 		},
@@ -229,7 +255,7 @@ module.exports = function(grunt) {
 			dev: {
 				options: {
 					// ignores: ['node_modules']		//doesn't work - apparently doesn't handle directories..
-					ignores: ['node_modules/**/*.js']
+					ignores: ['node_modules/**/*.js', 'test/config/**/*.js']
 				},
 				files: {
 					src: ['**/*.js']

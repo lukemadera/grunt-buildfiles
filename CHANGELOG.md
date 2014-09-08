@@ -1,3 +1,7 @@
+## 0.3.7
+## Features
+- support `grunt.template` `options.data` for writing files via new `templateData` option
+
 ## 0.3.6
 ## Features
 - add `moduleGroupsSkipPrefix` (defaults to __) as (proper) way to 'comment out' modules or skipModules in `buildfilesModuleGroups.json` and NOT include them. Also fix error (change to console WARNING) that would result from bad module name.

@@ -206,7 +206,17 @@ Example of JUST the buildfiles task config - NOTE this plugin depends on and wor
 				baseLess: {
 					src: publicPathRelative+"common/less/_base-grunt.less",
 					dest: publicPathRelative+"common/less/_base.less"
-				}
+				},
+				//use templateData - this allows using the SAME template file but generating MULTIPLE different output files via different options.data to be passed to grunt.template
+				protractorChrome: {
+					src: publicPathRelative+"config/protractor.conf-grunt.js",
+					dest: publicPathRelative+"config/protractor/protractor.conf.js",
+					templateData: {
+						protractorCaps: {
+							'browser': 'Chrome'
+						}
+					}
+				},
 			}
 		},
 ```

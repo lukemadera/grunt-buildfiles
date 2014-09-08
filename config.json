@@ -1,9 +1,15 @@
 {
-  "name": "grunt-buildfiles-test",
+	"name": "grunt-buildfiles-test",
 	"title":"Grunt Buildfiles Test",
 	"env": "development",
 	"domain": "localhost",
+	"scheme": "http",
+	"port": 3000,
 	"serverPath": "/",
 	"publicPath": "/public/app/",
-	"staticPath": "/"
+	"staticPath": "/",
+	"sauceLabs":{
+		"user": "",
+		"key": ""
+	}
 }
